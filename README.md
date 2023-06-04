@@ -2,7 +2,7 @@
 
 后端去把application.yml中的端口，redis，mongo和MySQL的地址修改一下，然后到com.book.controller.user.UserController里面把阿里云OSS的配置修改一下：
 
-![Snipaste_2023-06-04_10-57-07](E:\毕业\毕业设计\我的github\images\Snipaste_2023-06-04_10-57-07.png)
+![Snipaste_2023-06-04_10-57-07](/images/Snipaste_2023-06-04_10-57-07.png)
 
 之后导入mongodb和MySQL的数据， 启动就可以了。
 
