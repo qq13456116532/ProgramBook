@@ -101,7 +101,7 @@ public class UserController {
         // 获得Http客户端(可以理解为:你得先有一个浏览器;注意:实际上HttpClient与浏览器是不一样的)
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
         // 创建Get请求
-        HttpGet httpGet = new HttpGet("https://api.weixin.qq.com/sns/jscode2session?appid=wxe050360ab55ebe63&secret=ae33fbc2468de0df0fe10dc3b288acb6&js_code=" + loginDataVo.getCode());
+        HttpGet httpGet = new HttpGet("https://api.weixin.qq.com/sns/jscode2session?appid=你的appid&secret=你的secret&js_code=" + loginDataVo.getCode());
         // 响应模型
         CloseableHttpResponse response = null;
         String openidout = "";
