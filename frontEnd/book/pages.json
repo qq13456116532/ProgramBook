@@ -1,0 +1,220 @@
+{
+	"browser": { 
+	   "vertx": false 
+	 }, 
+	 "window": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "",
+    "navigationBarBackgroundColor": "#FD9941",
+    "backgroundColor": "#ffffff"
+  }
+	 ,
+	  "networkTimeout": {
+	     "request": 10000,
+	     "connectSocket": 10000,
+	     "uploadFile": 10000,
+	     "downloadFile": 10000
+	   },
+	   "debug": true,
+	   "sitemapLocation": "sitemap.json",
+	 "tabBar": {
+	     "color": "#676767",
+	     "selectedColor": "#fd9941",
+	     "borderStyle": "white",
+	     "backgroundColor": "#ffffff",
+	     "list": [
+	       {
+	         "pagePath": "pages/booklist/booklist",
+	         "iconPath": "static/booklist_gray.png",
+	         "selectedIconPath": "static/booklist.png",
+	         "text": "书架"
+	       },
+	       {
+	         "pagePath": "pages/shop/shop",
+	         "iconPath": "static/tuijian_gray.png",
+	         "selectedIconPath": "static/tuijian.png",
+	         "text": "书城"
+	       },
+	       {
+	         "pagePath": "pages/user/user",
+	         "iconPath": "static/user_gray.png",
+	         "selectedIconPath": "static/user.png",
+	         "text": "我的"
+	       }
+	     ]
+	   },
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/booklist/booklist",
+			"style": {
+				  "backgroundTextStyle": "light",
+				  "navigationBarBackgroundColor": "#FD9941",
+				  "navigationBarTitleText": "我的书单",
+				  "navigationBarTextStyle": "white"
+			}
+
+		}, {
+			"path": "pages/shop/shop",
+			"style": {
+				"backgroundTextStyle": "light",
+				"backgroundColor": "#fff",
+				"navigationBarBackgroundColor": "#FD9941",
+				"navigationBarTitleText": "书城",
+				"navigationBarTextStyle": "white"
+			}
+
+		}, {
+			"path": "pages/user/user",
+			"style": {
+				"enablePullDownRefresh": false,
+				 "backgroundTextStyle":"light",
+				  "backgroundColor":"#ffffff",
+				  "navigationBarBackgroundColor": "#FD9941",
+				  "navigationBarTitleText": "个人中心",
+				  "navigationBarTextStyle":"white"
+			}
+
+		}
+	    ,{
+            "path" : "pages/book_detail/book_detail",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false,
+				 "backgroundTextStyle": "light",
+				  "navigationBarTitleText": "",
+				  "navigationBarTextStyle": "white",
+				  "navigationBarBackgroundColor": "#FD9941"
+				  
+            }
+            
+        }
+        ,{
+            "path" : "pages/component/email_digest/email_digest",
+            "style" :                                                                                    
+            {
+                "backgroundTextStyle":"light",
+                "backgroundColor":"#ffffff",
+                "navigationBarBackgroundColor": "#FD9941",
+                "navigationBarTitleText": "邮件",
+                "navigationBarTextStyle":"white"
+            }
+            
+        }
+        ,{
+            "path" : "pages/component/err_page/err_page",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/component/err_tips/err_tips",
+            "style" :                                                                                    
+            {
+                "navigationBarTitleText": "",
+                "enablePullDownRefresh": false
+            }
+            
+        }
+        ,{
+            "path" : "pages/component/toast/toast",
+            "style" :                                                                                    
+            {
+                "backgroundTextStyle":"light",
+                "backgroundColor":"#ffffff",
+                "navigationBarBackgroundColor": "#FD9941",
+                "navigationBarTitleText": "干杯",
+                "navigationBarTextStyle":"white"
+            }
+            
+        }
+        ,{
+            "path" : "pages/classify/classify",
+            "style" :                                                                                    
+            {
+                "enablePullDownRefresh": false,
+				 "backgroundTextStyle": "light",
+				  "backgroundColor": "#ffffff",
+				  "navigationBarBackgroundColor": "#FD9941",
+				  "navigationBarTitleText": "分类",
+				  "navigationBarTextStyle": "white"
+            }  
+        }
+        ,{
+            "path" : "pages/rank/rank",
+            "style" :                                                                                    
+            {
+                "backgroundTextStyle":"light",
+                 "backgroundColor":"#fff",
+                 "navigationBarBackgroundColor": "#FD9941",
+                 "navigationBarTitleText": "排行榜",
+                 "navigationBarTextStyle":"white"
+            }
+            
+        }
+        ,{
+            "path" : "pages/user/userinfo/userinfo",
+            "style" :                                                                                    
+            {
+                  "backgroundTextStyle":"light",
+                  "backgroundColor":"#ffffff",
+                  "navigationBarBackgroundColor": "#FD9941",
+                  "navigationBarTitleText": "详细信息",
+                  "navigationBarTextStyle":"white"
+            }
+        },
+		
+		{
+			"path": "pages/book_detail/reader/reader",
+			"style": {
+				"backgroundTextStyle": "light",
+				  "navigationBarBackgroundColor": "#FD9941",
+				  "navigationBarTitleText": "",
+				  "navigationBarTextStyle": "white"
+			}
+			
+		}
+    ],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8"
+	},
+	"uniIdRouter": {},
+	"networkTimeout": {
+	    "request": 10000,
+	    "connectSocket": 10000,
+	    "uploadFile": 10000,
+	    "downloadFile": 10000
+	  },
+	  "debug": true,
+	  "sitemapLocation": "sitemap.json",
+	"condition": { //模式配置，仅开发期间生效
+		"current": 0, //当前激活的模式(list 的索引项)
+		"list": [{
+			"name": "test", //模式名称
+			"path": "pages/login/wxlogin/wxlogin", //启动页面，必选
+			"query": "" //启动参数，在页面的onLoad函数里面得到
+		},
+		{
+			"name": "shop", //模式名称
+			"path": "pages/shop/shop", //启动页面，必选
+			"query": "" //启动参数，在页面的onLoad函数里面得到
+		},
+		{
+			"name": "book_detail", //模式名称
+			"path": "pages/book_detail/book_detail", //启动页面，必选
+			"query": "" //启动参数，在页面的onLoad函数里面得到
+		},
+		{
+			"name": "classify", //模式名称
+			"path": "pages/classify/classify", //启动页面，必选
+			"query": "" //启动参数，在页面的onLoad函数里面得到
+		}
+		]
+	}
+}

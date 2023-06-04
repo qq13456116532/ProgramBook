@@ -1,0 +1,22 @@
+<template name="email_digest">
+	<view>
+  <view class="author">
+    <image :src="digest_data.author_img"></image>
+    <text>
+        <text class="name">{{digest_data.author_name}}</text>
+        <text class="des">{{digest_data.author_des}}</text>
+    </text>
+  </view>
+  <view class="title">{{digest_data.title}}</view>
+  <view class="content">{{digest_data.content}}</view>
+  </view>
+</template>
+
+<script>
+	export default {
+	}
+</script>
+
+<style lang="stylus">
+
+</style>
