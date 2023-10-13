@@ -4,7 +4,7 @@
 
 ## 运行界面： 
 
-![image-20230404182232643](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404182232643.png)
+![image-20230404182232643](image/image-20230404182232643.png)
 
 ![image-20230404182401471](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404182401471.png)
 
