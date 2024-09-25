@@ -6,15 +6,15 @@
 
 ![image-20230404182232643](readme/image-20230404182232643.png)
 
-![image-20230404182401471](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404182401471.png)
+![image-20230404182401471](readme/image-20230404182401471.png)
 
-![image-20230404182651488](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404182610721.png)
+![image-20230404182651488](readme/image-20230404182610721.png)
 
 搜索：
 
-![image-20230404182802737](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404182651488.png)
+![image-20230404182802737](readme/image-20230404182651488.png)
 
-![image-20230404182610721](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404182802737.png)
+![image-20230404182610721](readme/image-20230404182802737.png)
 
 ## 安装
 
@@ -24,7 +24,7 @@ HbuilderX，微信开发者工具，然后把 /utils/api/api.js中的HOST_URL的
 
 用HbuilderX运行到小程序即可
 
-![image-20230404181954029](https://github.com/qq13456116532/ProgramBookFront/blob/main/readme/image-20230404181954029.png)
+![image-20230404181954029](readme/image-20230404181954029.png)
 
 ## 贡献
 
