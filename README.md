@@ -1,4 +1,5 @@
 本项目是一个基于微信小程序的面向程序员的书城，简称微书，前端使用Uniapp框架，后端使用SpringBoot
+[English README](README_en.md)
 
 后端去把application.yml中的端口，redis，mongo和MySQL的地址修改一下，然后到com.book.controller.user.UserController里面把阿里云OSS的配置修改一下：
 
