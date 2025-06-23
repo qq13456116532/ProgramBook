@@ -14,6 +14,17 @@ For the frontend, open the project in HBuilderX and change the `HOST_URL` IP in 
 
 ![image-20230404181954029](/images/image-20230404181954029.png)
 
+## Project structure
+- `afterEnd/ProgramBook` backend code
+- `frontEnd/book` frontend code
+
+## Features
+- WeChat login with tokens stored in Redis
+- Book search, categories and ranking list
+- Reading progress sync and reading time statistics
+- Personal bookshelf, comments, daily sign-in and notifications
+- User avatars stored in Alibaba Cloud OSS
+
 ## Screenshots
 
 ![image-20230404182232643](/images/image-20230404182232643.png)
