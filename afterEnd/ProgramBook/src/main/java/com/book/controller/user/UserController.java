@@ -6,12 +6,14 @@ import com.aliyun.oss.OSS;
 import com.aliyun.oss.OSSClientBuilder;
 import com.book.mapper.EmailMapper;
 import com.book.mapper.UserloginMapper;
+
 import com.book.pojo.Email;
 import com.book.pojo.Userlogin;
 import com.book.pojo.user;
 import com.book.utils.Result;
 import com.book.utils.ResultCode;
 import com.book.vo.LoginDataVo;
+
 import jakarta.annotation.Resource;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpEntity;
@@ -23,10 +25,12 @@ import org.apache.http.util.EntityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
+
 import org.springframework.web.bind.annotation.*;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
+
 import java.util.Base64;
 import java.util.Date;
 import java.util.HashMap;
@@ -62,6 +66,7 @@ public class UserController {
     @Value("${wechat.secret}")
     private String wechatSecret;
     
+
     @GetMapping("/user/judgeExpire")
     @ResponseBody
     public Result judgeExpire(@RequestParam(value = "token") String token) {
@@ -86,6 +91,7 @@ public class UserController {
         String accessKeyId = ossAccessKeyId;
         String accessKeySecret = ossAccessKeySecret;
         String bucketName = ossBucketName;
+
         // 填写Object完整路径，例如exampledir/exampleobject.txt。Object完整路径中不能包含Bucket名称。
         String imageName = "ProgramBook/"+UUID.randomUUID().toString()+".jpg";
         tempurl = tempurl.replaceFirst("^data:[^;]+;base64,", "");
@@ -104,10 +110,12 @@ public class UserController {
     public Result onLogin(@RequestBody LoginDataVo loginDataVo) throws IOException {
         // 获得Http客户端(可以理解为:你得先有一个浏览器;注意:实际上HttpClient与浏览器是不一样的)
         CloseableHttpClient httpClient = HttpClientBuilder.create().build();
+
         String appid = wechatAppid;
         String secret = wechatSecret;
         HttpGet httpGet = new HttpGet("https://api.weixin.qq.com/sns/jscode2session?appid=" + appid +
                 "&secret=" + secret + "&js_code=" + loginDataVo.getCode());
+
         // 响应模型
         CloseableHttpResponse response = null;
         String openidout = "";

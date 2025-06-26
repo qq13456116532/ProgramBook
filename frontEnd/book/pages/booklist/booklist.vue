@@ -279,6 +279,7 @@
 										wx.setStorageSync('token', suc.data.data.token)
 									} catch (e) {
 										console.log("保存token出错了",e)
+
 									}
 									self.getMyBooks(suc.data.data.token)
 									console.log("登录成功！")

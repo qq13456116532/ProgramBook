@@ -85,50 +85,10 @@
 									:style="{ color: currentFontFamily === font ? colorStyle.control_fontColor : secondaryTextStyle.color }">
 									{{ font }}
 								</text>
-								<icon v-if="currentFontFamily === font" type="success_no_circle" size="12"
-									:color="colorStyle.control_fontColor"></icon>
-							</view>
-						</view>
-					</view>
-				</view>
-			</view>
-
-			<!-- Table of Contents (Mulu) Panel -->
-			<view :class="['mulu-detail', { active: isShowMulu }]" @tap.self="closeMulu">
-				<view class="muluPanel" :style="{ backgroundColor: colorStyle.content_bg }">
-					<swiper class="mulu-swipers" :current="muluSwiperNum" @change="muluSwiperChange">
-						<swiper-item class="mulu-swiper">
-							<view class="search">
-								<icon type="search" size="15" color="#ccc" />
-								<input type="text" placeholder="搜索全书内容" placeholder-class="muluPl" @confirm="doContentSearch" />
-							</view>
-							<view class="bookInfo" :style="{ color: secondaryTextStyle.color }">
-								<image :src="headImg" mode="scaleToFill"></image>
-								<view class="book">
-									<text class="factionName">{{ factionName }}</text>
-									<text class="author">{{ book.author }}</text>
+								<icon v-if="currentFontFamily === font" type="success_no_circle" size="12"/>
 								</view>
-								<view class="readerTime">
-									<text><text class="num">{{ hours }}</text>时<text class="num">{{ minutes }}</text>分</text>
-									<text class="timeDes">读书时长</text>
 								</view>
-							</view>
-							<scroll-view class="sections" scroll-y="true">
-								<view v-for="item in allSectionData" :key="item.sectionId" class="section"
-									:style="{ color: item.sectionNum === sliderValues.section ? colorStyle.control_fontColor : secondaryTextStyle.color }"
-									@tap="loadChapterBySelection(item)">
-									<text class="factionNum">第{{ item.sectionNum }}章</text>
-									<text class="factionName">{{ item.sectionTitle }}</text>
-								</view>
-							</scroll-view>
-						</swiper-item>
-						<swiper-item class="shuqian-swiper">书签</swiper-item>
-						<swiper-item class="huaxian-swiper">划线</swiper-item>
-					</swiper>
-					<view class="bottomCtr">
-						<text :style="{ color: getMuluTabStyle(0) }">目录</text>
-						<text :style="{ color: getMuluTabStyle(1) }">书签</text>
-						<text :style="{ color: getMuluTabStyle(2) }">划线</text>
+								
 					</view>
 				</view>
 			</view>
@@ -209,6 +169,7 @@
 				currentFontFamily: '等线',
 				allFontFamily: ['微软雅黑', '黑体', 'Arial', '楷体', '等线'],
 				lineHeight: 50, // rpx
+
 				colorStyle: {
 					content_bg: '#f5f9fc',
 					styleNum: 1,
@@ -528,6 +489,7 @@
 							} else {
 								// Revert slider if user cancels
 								this.sliderValues.bright = 80;
+
 							}
 						}
 					});
@@ -648,6 +610,7 @@
 		}
 	}
 </script>
+
 <style>
 	.reader-container {
 		/* height: 100%; 看后面加回来*/
@@ -679,6 +642,7 @@
 	.reader-container .control {
 		width: 100%;  /* 新加的*/
 		position: fixed; /* 新加的*/
+
 		background-color: #fff;
 		height: 110rpx;
 		/* position: absolute; */
@@ -1292,6 +1256,7 @@
 	}
 
 
+
 	.mulu-detail .mulu-swiper .sections {
 		margin-top: 20rpx;
 		height: 86%;
@@ -1472,3 +1437,4 @@
 	/* ... icon content definitions e.g., .mymulu1-icon::before { content: '\e60b;'; } ... */
 
 </style>
+
