@@ -1,0 +1,70 @@
+# ===================================================================
+# General & OS
+# ===================================================================
+# Logs and temporary files
+**/logs
+**/*.log
+**/npm-debug.log*
+**/yarn-debug.log*
+**/yarn-error.log*
+
+# OS generated files
+**/.DS_Store
+**/.DS_Store?
+**/._*
+**/.Spotlight-V100
+**/.Trashes
+**/ehthumbs.db
+**/Thumbs.db
+
+# ===================================================================
+# IDE & Editor Config
+# ===================================================================
+# IntelliJ
+**/.idea/
+**/*.iml
+**/*.iws
+**/*.ipr
+**/out/
+
+# VSCode
+**/.vscode/
+
+# Eclipse
+**/.classpath
+**/.project
+**/.settings/
+
+# ===================================================================
+# Backend (Java / Maven)
+# Based on files in `afterEnd/ProgramBook/`
+# ===================================================================
+# Maven build output directory
+**/target/
+
+# Compiled class files
+**/*.class
+
+# Package Files
+**/*.jar
+**/*.war
+**/*.ear
+**/application.yml
+
+# ===================================================================
+# Frontend (uni-app / Vue)
+# Based on files in `frontEnd/book/`
+# ===================================================================
+# Dependencies
+**/node_modules/
+**/frontend/book/utils/es6-promise.min.js
+# Build output directory for uni-app
+**/unpackage/
+# Also ignore 'dist' as it's a common build output folder name
+**/dist/
+
+# Local environment variables
+**/.env.local
+**/.env.*.local
+*.py
+*.txt

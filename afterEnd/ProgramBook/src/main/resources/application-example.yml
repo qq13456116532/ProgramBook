@@ -1,0 +1,51 @@
+server:
+  port: <server_port>        # 比如 8080 或 443
+
+spring:
+  data:
+    redis:
+      host: <redis_host>
+      port: <redis_port>
+      username: <redis_username>
+      password: <redis_password>
+      database: <redis_database>
+    mongodb:
+      uri: mongodb://<mongodb_host>:<mongodb_port>/<mongodb_database>
+
+  datasource:
+    driver-class-name: com.mysql.jdbc.Driver
+    url: jdbc:mysql://<mysql_host>:<mysql_port>/<mysql_database>?characterEncoding=utf-8&useSSL=false&autoReconnect=true&verifyServerCertificate=false
+    username: <mysql_username>
+    password: <mysql_password>
+    hikari:
+      connection-test-query: SELECT 1 FROM DUAL
+      connection-timeout: 36000
+      maximum-pool-size: 500
+      max-lifetime: 600000
+      minimum-idle: 20
+      validation-timeout: 3000
+      idle-timeout: 60000
+      connection-init-sql: SET NAMES utf8mb4
+
+aliyun:
+  oss:
+    endpoint: <oss_endpoint>
+    access-key-id: <oss_access_key_id>
+    access-key-secret: <oss_access_key_secret>
+    bucket-name: <oss_bucket_name>
+
+wechat:
+  appid: <wechat_appid>
+  secret: <wechat_secret>
+
+mybatis-plus:
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+logging:
+  level:
+    com:
+      baomidou:
+        mybatisplus: debug
+      book:
+        mapper: debug
