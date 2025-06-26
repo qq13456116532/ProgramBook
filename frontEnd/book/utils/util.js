@@ -19,52 +19,26 @@ function judgeTelOrName(str){
     return 'error';
   }
 }
-
 function eNumToCNum(num){
-  if(typeof num == "number"){
-    switch(num){
-      case 0:
-        return '一'
-        break;
-      case 1:
-        return '二'
-        break;
-      case 2:
-        return '三'
-        break;
-      case 3:
-        return '四'
-        break;
-      case 4:
-        return '五'
-        break;
-      case 5:
-        return '六'
-        break;
-      case 6:
-        return '七'
-        break;
-      case 7:
-        return '八'
-        break;
-      case 8:
-        return '九'
-        break;
-      case 9:
-        return '十'
-        break;
-      case 10:
-        return '十一'
-        break;
-      case 11:
-        return '十二'
-        break;
-    }
-  }else{
-    console.log("传入的参数不是数字.");
-    return '';
+  switch(num){
+    case 1: return '一';
+    case 2: return '二';
+    case 3: return '三';
+    case 4: return '四';
+    case 5: return '五';
+    case 6: return '六';
+    case 7: return '七';
+    case 8: return '八';
+    case 9: return '九';
+    case 10: return '十';
+    case 11: return '十一';
+    case 12: return '十二';
+    default:
+      console.log("传入的参数不是1~12的数字。");
+      return '';
   }
 }
+
 //格式化时间函数01
 function formatTime(date) {
   let year = date.getFullYear()

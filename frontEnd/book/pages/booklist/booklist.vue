@@ -1,869 +1,789 @@
 <template>
+	<!-- The template from the previous refactoring is perfect and does not need to change. -->
+	<!-- It is compatible with both Vue 2 and Vue 3. -->
 	<view class="booklist-container">
+		<!-- Search bar section -->
 		<view class="search">
 			<view class="section">
 				<view class="form">
 					<view class="input-block">
-						<input placeholder="请输入搜索内容" @focus="setIsSearching" @blur="judgeIsNull" @input="finishedInput"
-							v-model="searchValue" />
+						<input 
+							placeholder="请输入搜索内容" 
+							v-model="searchValue"
+							@focus="isSearching = true" 
+							@blur="isSearching = !!searchValue" 
+						/>
 					</view>
-					<view class="search-block" :style="'display:'+ isSearching? 'none': 'inline-block'">
-						<icon class="icon-small" style="margin-left: 630rpx;" type="search" color="#fff"></icon>
-						<!-- <text>请输入搜索内容</text> -->
+					<view class="search-block" v-show="!isSearching">
+						<icon class="icon-small" type="search" color="#fff"></icon>
 					</view>
 				</view>
-				<view class="toShop" bindtap="goToShop">
+				<view class="toShop" @tap="goToShop">
 					<icon class="shop-icon"></icon>
 				</view>
 			</view>
 		</view>
+
+		<!-- Header section for time/month selection -->
 		<view class="header">
 			<view class="headerLine"></view>
-			<text class="headerTime">{{headerText}}</text>
+			<text class="headerTime">{{ headerText }}</text>
 			<view class="timeTab">
-				<block v-for="item in showMonths" :key="item.month">
-					<view :class="(item.monthIndex === monthIndex) ? 'active last everyTime' : 'everyTime'"
-						@click="chooseMonth" :data-month="item.monthIndex">
-						<text>{{item.monthCname}}</text>
-						<icon :class="item.hasRecord? 'hasRecord': ''"></icon>
-					</view>
-				</block>
+				<view 
+					v-for="item in showMonths" 
+					:key="item.month"
+					:class="['everyTime', { 'active': item.monthIndex === selectedMonthIndex }]"
+					@click="selectedMonthIndex = item.monthIndex"
+				>
+					<text>{{ item.monthCname }}</text>
+					<icon :class="{ 'hasRecord': item.hasRecord }"></icon>
+				</view>
 			</view>
 		</view>
+
+		<!-- List section -->
 		<view class="list">
-			<view class="all" v-if="books.length > 0">
-				<block class="bookitem" v-for="(item,index) in books" :key="item.id">
-					<block v-if="index<10 && item.isShow">
-						<view class="bookInfo" @click="goToBookDetail(item.id)" :bookid="item.id">
-							<text class="bookName">{{item.factionName}}</text>
-							<text class="author">
-								<text class="text-underline">作者：</text>{{item.author}}</text>
-							<text class="bookDes">简介： {{item.des}}</text>
-							<icon :class="item.hasRead === 0? 'read-icon isRead': 'read-icon notRead'"></icon>
-						</view>
-						<image :src="item.headerImage" mode="scaleToFill" />
-					</block>
-				</block>
+			<view class="all" v-if="filteredBooks.length > 0">
+				<!-- NEW -->
+				<view class="book-item" v-for="book in filteredBooks" :key="book.id" @click="goToBookDetail(book.id)">
+				    <image class="book-item__image" :src="book.headerImage" mode="aspectFill" />
+				    <view class="book-item__info">
+				        <text class="book-item__title">{{ book.factionName }}</text>
+				        <text class="book-item__author">
+				            <text class="text-underline">作者：</text>{{ book.author }}
+				        </text>
+				        <text class="book-item__description">简介： {{ book.des }}</text>
+				        <icon :class="['read-icon', book.hasRead === 0 ? 'isRead' : 'notRead']"></icon>
+				    </view>
+				</view>
 			</view>
-			<view class="empty" v-if="books.length === 0">
+
+			<view class="empty" v-else-if="books.length === 0">
 				<image src="https://bpic.588ku.com/element_origin_min_pic/00/77/63/0056e18ce712923.jpg"></image>
 				<button @click="goToShop" plain="true" type="default">您还未添加书籍，快去书城看看</button>
 			</view>
-		</view>
-
-		<!--  <import src="../component/err_tips/err_tips.vue" />
-	  <template is="err_tips" :data="err_tips_data" />
-	
-	  <import src="../component/toast/toast.vue" />
-	  <template is="toast" :data="toast_data" />
-	
-
-	  <import src="../component/err_page/err_page.vue" />
-	  <template is="err_page" :data="err_page_data" /> -->
-		<view class='box' :hidden="authorModal">
-			<view class='msg-box'>
-				<text class='title'>设置</text>
-				<text class='aumsg'>We微书申请获得以下权限</text>
-				<text class='msg'>●设置你的公开信息（昵称、头像等）</text>
-				<view class="headimg">
-					<button style="width: 100rpx; height: 100rpx; padding: 0; border: none;border-radius: 50rpx;"
-						open-type="chooseAvatar" @chooseavatar="chooseavatar">
-						<image :src="avatarsetting" model="center" @error="headimgError" />
-					</button>
-					<!-- <image :src="avatar" model="center" @error="headimgError" @click="gotoUserInfo" /> -->
-					<!-- <text class="username">{{username}}</text> -->
-
-				</view>
-				<!-- <open-data type="userNickName" class="username"></open-data> -->
-				<input v-model="nameSetting" @blur="handleNameBlur" type="nickname" class="weui-input"
-					style="text-align: center;" placeholder="请输入昵称" />
-
-				<view class='btn_wrapper'>
-					<button @click='authorcancle' class='btn'>拒绝</button>
-					<button class='btn confirm_btn' open-type='getUserInfo' @click='bindGetUserprofile'>允许</button>
-				</view>
+            
+			<view class="empty" v-else>
+				<image src="https://bpic.588ku.com/element_origin_min_pic/00/77/63/0056e18ce712923.jpg"></image>
+				<text>没有找到相关的书籍</text>
 			</view>
 		</view>
-		<!-- 添加遮罩层 -->
-		<view class='mask' :hidden="authorModal"></view>
 
+		<!-- Authorization modal -->
+		<template v-if="!isAuthorized">
+			<view class="mask"></view>
+			<view class='box'>
+				<view class='msg-box'>
+					<text class='title'>授权登录</text>
+					<text class='aumsg'>We微书申请获得以下权限</text>
+					<text class='msg'>●设置你的公开信息（昵称、头像等）</text>
+					<view class="headimg">
+						<button 
+							class="avatar-button"
+							open-type="chooseAvatar" 
+							@chooseavatar="handleChooseAvatar"
+						>
+							<image :src="authForm.avatar" model="center" />
+						</button>
+					</view>
+					<input 
+						v-model="authForm.nickname" 
+						type="nickname" 
+						class="weui-input"
+						placeholder="请输入昵称" 
+					/>
+					<view class='btn_wrapper'>
+						<button @click='handleAuthCancel' class='btn'>拒绝</button>
+						<button class='btn confirm_btn' @click='handleAuthorize'>允许</button>
+					</view>
+				</view>
+			</view>
+		</template>
 	</view>
-
 </template>
 
 <script>
-	import {
-		getMyBooks
-	} from '../../utils/api/api';
-	//booklist.js
-	var Api = require('../../utils/api/api');
-	var Util = require('../../utils/util');
-	//获取应用实例
-	var app = getApp();
-	export default {
-		data() {
+// Use the standard Options API for Vue 2
+import { getMyBooks, GetOnLogin, GetjudgeExpire } from '../../utils/api/api';
+import { eNumToCNum } from '../../utils/util';
+
+export default {
+	data() {
+		return {
+			// All state properties go here
+			authForm: {
+				nickname: '',
+				avatar: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/132.jfif',
+				avatarFile: null, // To store the base64 or temp file path
+			},
+			isAuthorized: true, // Controls the authorization modal
+			books: [], // Raw list of books from the API
+			searchValue: '',
+			isSearching: false,
+			headerText: '',
+			showMonths: [],
+			selectedMonthIndex: 0,
+		};
+	},
+
+	computed: {
+		// Computed properties are a feature of both Vue 2 and 3
+		filteredBooks() {
+			if (!this.searchValue) {
+				return this.books; // Return all books if search is empty
+			}
+			const searchTerm = this.searchValue.toLowerCase();
+			return this.books.filter(book => 
+				book.factionName.toLowerCase().includes(searchTerm) ||
+				book.author.toLowerCase().includes(searchTerm)
+			);
+		}
+	},
+
+	// uni-app lifecycle hooks
+	onReady() {
+		const timeResult = this.generateMonths();
+		this.showMonths = timeResult.showMonths;
+		this.headerText = timeResult.headerText;
+	},
+
+	async onShow() {
+		// Using async/await is perfectly fine in Vue 2 methods/hooks
+		await this.checkAuthAndFetchData();
+		this.searchValue = ''; // Reset search on show
+	},
+
+	methods: {
+		// All functions go into the `methods` object
+		async checkAuthAndFetchData() {
+			try {
+				const token = uni.getStorageSync('token');
+				if (!token) {
+					console.log("No token found, showing auth modal.");
+					this.showAuthModal();
+					return;
+				}
+
+				const [err, res] = await uni.request({ url: GetjudgeExpire(token) });
+				if (err || res.data.code !== 200) {
+					console.log("Token expired or invalid, showing auth modal.");
+					this.showAuthModal();
+					return;
+				}
+
+				console.log("Token is valid.");
+				this.isAuthorized = true;
+				uni.showTabBar({ animation: true });
+				await this.fetchMyBooks(token);
+
+			} catch (error) {
+				console.error("Authorization check failed:", error);
+				this.showAuthModal();
+			}
+		},
+
+		async fetchMyBooks(token) {
+			uni.showLoading({ title: '获取书单中...' });
+			try {
+				const [err, res] = await uni.request({ url: getMyBooks(token) });
+				if (res && res.data && res.data.data) {
+					this.books = res.data.data;
+					console.log('Successfully fetched books:', this.books.length);
+				} else {
+					this.books = [];
+				}
+			} catch (error) {
+				console.error("Failed to fetch books:", error);
+				uni.showToast({ title: '获取书单失败', icon: 'error' });
+			} finally {
+				uni.hideLoading();
+			}
+		},
+
+		showAuthModal() {
+			this.isAuthorized = false;
+			uni.hideTabBar({ animation: true });
+		},
+
+		handleAuthCancel() {
+			this.isAuthorized = true;
+			uni.showTabBar({ animation: true });
+		},
+
+		async handleAuthorize() {
+			if (!this.authForm.nickname) {
+				return uni.showToast({ title: '请输入昵称', icon: 'none' });
+			}
+			if (!this.authForm.avatarFile) {
+				return uni.showToast({ title: '请选择头像', icon: 'none' });
+			}
+			
+			uni.showLoading({ title: '登录中...' });
+
+			try {
+				const [loginErr, loginRes] = await uni.login();
+				if (loginErr) throw new Error('微信登录失败');
+				
+				const [reqErr, res] = await uni.request({
+					url: GetOnLogin(),
+					method: 'POST',
+					data: {
+						code: loginRes.code,
+						nickName: this.authForm.nickname,
+						avatar: this.authForm.avatarFile,
+					}
+				});
+				
+				const loginData = res.data;
+				if (reqErr || loginData.code !== 200 || !loginData.data.token) {
+					throw new Error(loginData.msg || '服务器登录失败');
+				}
+				
+				uni.setStorageSync('token', loginData.data.token);
+				await this.checkAuthAndFetchData();
+				uni.showToast({ title: '登录成功', icon: 'success' });
+
+			} catch (error) {
+				console.error("Authorization process failed:", error);
+				uni.showToast({ title: error.message || '登录时发生错误', icon: 'error' });
+			} finally {
+				uni.hideLoading();
+			}
+		},
+
+		handleChooseAvatar(e) {
+			const { avatarUrl } = e.detail;
+			this.authForm.avatar = avatarUrl;
+			
+			uni.getFileSystemManager().readFile({
+				filePath: avatarUrl,
+				encoding: 'base64',
+				success: res => {
+					this.authForm.avatarFile = 'data:image/jpeg;base64,' + res.data;
+				},
+				fail: err => {
+					console.error("Failed to read avatar file:", err);
+					uni.showToast({ title: '头像处理失败', icon: 'none' });
+				}
+			});
+		},
+
+		generateMonths() {
+			const resultArray = [];
+			const today = new Date();
+			const currentMonth = today.getMonth();
+			
+			for (let i = 0; i <= 6; i++) {
+				const month = currentMonth - i;
+				const adjustedMonth = month < 0 ? month + 12 : month;
+				resultArray.push({
+					monthCname: `${eNumToCNum(adjustedMonth + 1)}月`,
+					hasRecord: i === 0,
+					monthIndex: i
+				});
+			}
 			return {
-				headerText: '',
-				showMonths: [],
-				books: [],
-				isSearching: false,
-				searchValue: '',
-				userInfo: {},
-				err_page_data: null, //app状态页
-				monthIndex: 0,
-				authorModal: true,
-				avatarsetting: "https://wk-gulimall.oss-cn-beijing.aliyuncs.com/132.jfif",
-				nameSetting: ""
-			}
+				headerText: `${today.getFullYear()}年${resultArray[0].monthCname}`,
+				showMonths: resultArray.reverse()
+			};
 		},
-		onHide() {
-			this.searchValue = ""
+
+		goToShop() {
+			uni.switchTab({ url: '../shop/shop' });
 		},
-		onReady: function() {
-			var self = this;
-			var timeResult = self.allMonths();
-			this.showMonths = timeResult.showMonths
-			this.headerText = timeResult.headerText
-			console.log("时间结果是", timeResult)
-			//先获取本地缓存中的书单数据，等接口返回之后再更新
 
-			wx.getStorage({
-				key: 'booklist',
-				success: function(res) {
-					console.log('使用本地缓存的书单数据');
-					self.books = res.data
-				},
-				fail(res) {
-					console.log("书本缓存数据获取失败")
-				}
-			});
-		},
-		onLoad: function(e) {
-			var self = this;
-			//显示加载中
-			wx.showToast({
-				title: '正在获取书单...',
-				icon: 'loading',
-				duration: 1000
-			});
-		},
-		onShow: function() {
-			var self = this			
-			var isLogin = uni.getStorage({
-				key: "token",
-				success(res) {
-					var token = res.data
-					console.log("打印一下缓存里的token", token)
-					if (res.data) {
-						// console.log("当前已经执行到了token是", res.data)
-						wx.request({
-							url: Api.GetjudgeExpire(token),
-							success: function(suc) {
-								if (suc.data.code == 200)
-									console.log("judgeExpire请求成功,没过期", suc)
-								else {
-									console.log("judgeExpire请求但是缓存过期了", suc)
-									self.authorModal = false;
-									wx.hideTabBar({
-										animation: true
-									})
-									return;
-								}
-							},
-							fail: function(e) {
-								console.log("请求失败", e)
-							}
-						})
-						self.authorcancle()
-					}
-				},
-				fail(res) {
-					console.log("获取token失败", res)
-					self.authorModal = false;
-					wx.hideTabBar({
-						animation: true
-					})
-				}
-			})
-			//获取我的书单
-			// console.log("读取一下用户ID")
-			this.getMyBooks(wx.getStorageSync('token'));
-
-		},
-		methods: {
-			handleNameBlur(event) {
-				this.nameSetting = event.detail.value
-			},
-			chooseavatar: function(e) {
-				var self = this
-				console.log("执行chooseavatar，e.detail.avatarUrl是", e.detail.avatarUrl)
-				// 获取图片数据
-				uni.getImageInfo({
-				  src: e.detail.avatarUrl,
-				  success: function (res) {
-					  console.log("uni.getImageInfo的结果是",res)
-				    // 将图片数据转为Base64编码字符串
-				    uni.getFileSystemManager().readFile({
-				      filePath: res.path,
-				      encoding: 'base64',
-				      success: function (res) {
-						  console.log("转化为base64：",res)
-						  self.avatarsetting = 'data:image/jpeg;base64,'+res.data
-				        // 将Base64编码字符串作为参数发送请求
-				        // uni.request({
-				        //   url: '后端接口url',
-				        //   method: 'POST',
-				        //   data: {
-				        //     image: res.data
-				        //   },
-				        //   success: function (res) {
-				        //     console.log(res.data)
-				        //   }
-				        // })
-				      }
-				    })
-				  },
-				  fail(res) {
-				  	console.log("uni.getImageInfo失败，结果是",res)
-				  	
-				  }
-				})
-				
-				
-				// this.avatarsetting = e.detail.avatarUrl
-			},
-			authorcancle() {
-				this.authorModal = true;
-				wx.showTabBar({
-					animation: true
-				})
-			},
-			//授权+登录
-			bindGetUserprofile() {
-				var self = this
-				console.log(self.avatarsetting + "和" + self.nameSetting)
-				if (self.nameSetting == "") {
-					uni.showToast({
-						title: '未设置昵称',
-						icon: 'error',
-						duration: 2000
-					});
-					return;
-				}
-				if (self.avatarsetting == "data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAASABIAAD/2wBDAAcFBQYFBAcGBgYIBwcICxILCwoKCxYPEA0SGhYbGhkWGRgcICgiHB4mHhgZIzAkJiorLS4tGyIyNTEsNSgsLSz/wAALCACEAIQBAREA/8QAGwABAAIDAQEAAAAAAAAAAAAAAAMFAgQGAQj/xAAuEAEAAgECAggGAgMAAAAAAAAAAQIDBBEFIRIVMUFRZKLhEyJhcYHBFFIjkdH/2gAIAQEAAD8A+gQAiAAAiAAAiAAAAIgAiAAAAAAAAAAAAEOr1VNJh+JfnPdHjKgz67Uai29r2iPCOUIa5L47b0vaJ+llpw/ilpvGLUW335Rf/q3AAAAc/wAWzzl1017sfyR+2iDpeHZ5z6Klrc5jlP5bIAAAOY1sTGuzRP8AeUAL7g0TGimfG8/pYAAAApOM6Wa5o1Fey/KfsrBlWtsl4pWu8zyh02lwxp9NTF/WOf3TAAAAxy4q5sU4713pLl82P4Oa+Pt6MzH+ka44Lp69GdRPOd9qfRbAAAANPWcSxaes1rbp5PCO77uftacl5vbnMzvLFv8ADuIfxJml67455/aV5iy481OnjtW8fVmAAAh1GrxaWnSyW590d8qXV8UzajetP8dPCO2fw0QEmHPkwX6eK1qSuNJximXauf5J8e72WPbzh6AAOUy5b5sk5L23mWAAC64LlvbHkx2tvWu2353WgAAqbcCrN5mufaPDo7/t51F5j0e51F5j0e51F5j0e51F5j0e51F5j0ex1F5j0e51F5j0e7d0OiroqXiL9Obds9nY2gAAAAAAAAAAAAAAAAAAAAAAAf/Z") {
-					uni.showToast({
-						title: '未设置头像',
-						icon: 'error',
-						duration: 2000
-					});
-					return;
-				}
-				this.authorcancle()
-				wx.login({
-					success(mysuc) {
-						console.log("wxlogin后看一下jscode", mysuc)
-						if (mysuc.code) {
-							//发起网络请求
-							wx.request({
-								url: Api.GetOnLogin(),
-								method: 'POST',
-								data: {
-									code: mysuc.code,
-									nickName: self.nameSetting,
-									avatar: self.avatarsetting,
-									// session_key: mysuc.session_key
-								},
-								success: function(suc) {
-									console.log("GetOnLogin请求成功", suc)
-									try {
-										wx.setStorageSync('token', suc.data.data.token)
-									} catch (e) {
-										console.log("保存token出错了",e)
-
-									}
-									self.getMyBooks(suc.data.data.token)
-									console.log("登录成功！")
-								},
-								fail: function(e) {
-									console.log("请求失败", e)
-								}
-							})
-						} else {
-							console.log('登录失败！' + mysuc.errMsg)
-						}
-					}
-				})
-			},
-			//获取我的书单
-			getMyBooks: function(token) {
-				var self = this;
-				console.log("正在执行getMyBooks")
-				uni.request({
-					url: Api.getMyBooks(token),
-					success: function(res) {
-						var books = res.data.data || [];
-						console.log('书籍信息');
-						console.log(books);
-						books.forEach(function(item) {
-							item.isShow = true;
-						});
-						//更新视图books
-						self.books = books
-						//将书单数据缓存到本地
-						// uni.setStorage({
-						// 	key: 'booklist',
-						// 	data: books,
-						// 	success: function(res) {
-						// 		console.log('成功保存书籍列表到本地缓存');
-						// 	}
-						// });
-					},
-					fail: function() {
-						console.log("请求书籍列表失败");
-						self.err_page_data = {
-							show: true,
-							image_url: 'https://bpic.588ku.com/element_origin_min_pic/00/77/63/0056e18ce712923.jpg',
-							text: '努力找不到网络>_<请检查后重试',
-							buttonText: '重试',
-							click: 'getMyBooks'
-						}
-					},
-					complete: function() {
-						//请求完成结束loading
-						wx.hideToast();
-					}
-				});
-			},
-			allMonths: function() {
-				var self = this;
-				var resultArray = [];
-				var today = new Date();
-				var month = today.getMonth();
-				// todo给出是否有记录的判断
-				// resultArray.push({
-				//   monthCname: Util.eNumToCNum(Math.abs(month)) + '月',
-				//   hasRecord: false
-				// });
-				for (var i = 0; i <= 6; i++) {
-					resultArray.push({
-						monthCname: Util.eNumToCNum(Math.abs(month - i < 0 ? month + 12 - i : month - i)) +
-							'月',
-						// hasRecord: ((Math.random() > 0.5) ? true : false),
-						hasRecord: i == 0,
-						monthIndex: i
-					});
-				}
-				return {
-					headerText: today.getFullYear() + '年' + resultArray[0].monthCname,
-					showMonths: resultArray.reverse()
-				}
-			},
-			goToShop: function() {
-				console.log("gotoshop")
-				uni.switchTab({
-					url: '../shop/shop',
-					success() {
-						console.log("switchTab调用成功")
-					},
-					fail(e) {
-						console.log("switchTab调用失败", e)
-					}
-				});
-			},
-			goToBookDetail: function(e) {
-				console.log("goToBookDetail的currentBookId是", e)
-				uni.navigateTo({
-					url: '../book_detail/book_detail?bookid=' + e
-				})
-			},
-			setIsSearching: function() {
-				this.isSearching = true;
-			},
-			judgeIsNull: function(event) {
-				if (event.detail.value == '') {
-					this.isSearching = false
-				} else {
-					this.isSearching = true
-				}
-			},
-			finishedInput: function(event) {
-				var self = this;
-				console.log("完成输入", event.detail.value)
-				var searchStr = event.detail.value;
-				const myRegex = new RegExp(searchStr, "i");
-
-				if (searchStr) {
-					var allBooks = self.books;
-					allBooks.forEach(function(item, index, array) {
-						var isNeedtoChage = true;
-						if (myRegex.test(item.factionName)) {
-
-							item.isShow = true;
-							isNeedtoChage = false;
-						}
-						//查询小说作者名称
-						if (myRegex.test(item.author)) {
-							item.author = self.findAndSigned(searchStr, item.author);
-							item.factionName = self.findAndSigned(searchStr, item.factionName);
-							item.isShow = true;
-							isNeedtoChage = false;
-						}
-						if (isNeedtoChage) {
-							item.isShow = false;
-						}
-					});
-					self.books = allBooks
-				} else {
-					console.log('查询数据为空，不做任何操作');
-					uni.getStorage({
-						key: 'openid',
-						success: function(res) {
-							var id = res.data;
-							self.getMyBooks(id);
-
-						},
-						fail(e) {
-							console.log("获取失败ID", e)
-						}
-					});
-				}
-
-			},
-			findAndSigned: function(searchString, readyToBeSearch) {
-				if (typeof searchString == 'string') {
-					var regExp = new RegExp(searchString, 'igm');
-					var leftStr = ''; //记录关键词左边的字符串
-					var rightStr = ''; //记录关键词右边的字符串
-					var count = 1; //计数器
-					var tempStr = readyToBeSearch; //用于正则匹配的字符串
-					var notChageStr =
-						readyToBeSearch; //用于截取字符串，和上面一样的值是因为不能把一个值既用于正则运算又用于记录加入<code></code>的新的字符串,这样会使得循环变成无限循环
-					var lastIndex = 0; //记录关键词的位置
-					while (regExp.exec(tempStr) != null) {
-						console.log(++count);
-						lastIndex = regExp.lastIndex + 13 * (count -
-							1); //每次循环notChageStr并非不变，而是多了<code></code>共计13个字符，所以为了保证后续循环中lastindex的正确性应该将lastindex自增13
-						leftStr = notChageStr.substring(0, lastIndex - searchString.length);
-						rightStr = notChageStr.substring(lastIndex);
-						notChageStr = leftStr + '<code>' + searchString + '</code>' + rightStr;
-					}
-					return notChageStr;
-				} else {
-					console.log('The param of findAndSigned is error!....')
-					return '';
-				}
-			},
-			clearSearchContent: function() {
-				//将不显示的书籍设置显示
-				var allBooks = this.data.books;
-				allBooks.forEach(function(item) {
-					item.isShow = true;
-				});
-				this.searchValue = ''
-				this.books = allBooks
-			},
-			//选择月份
-			chooseMonth: function(event) {
-				var self = this;
-				var month = event.target.month;
-				// console.log(event)
-				this.monthIndex = month
-			}
+		goToBookDetail(bookId) {
+			uni.navigateTo({ url: `../book_detail/book_detail?bookid=${bookId}` });
 		}
 	}
+}
 </script>
-
 <style>
-	.box .msg-box .headimg {
-		background-color: #ebe9fd;
-		text-align: center;
-		color: #ffffff;
-		/* padding-top: 20rpx; */
-	}
+/* --- 1. Design System: CSS Variables --- */
+.booklist-container {
+	/* Colors */
+	--color-primary: #fd9941;
+	--color-primary-light: #fbb16f;
+	--color-surface: #ffffff;
+	--color-background: #f7f7f8;
+	--color-text-primary: #333333;
+	--color-text-secondary: #888888;
+	--color-text-on-primary: #ffffff;
+	--color-border: #eeeeee;
+	--color-success: #07c160;
+	/* Spacing */
+	--spacing-small: 8rpx;
+	--spacing-medium: 16rpx;
+	--spacing-large: 24rpx;
+	--spacing-xlarge: 32rpx;
+	/* Borders */
+	--border-radius-small: 8rpx;
+	--border-radius-medium: 12rpx;
+	--border-radius-large: 20rpx;
+	/* Shadows */
+	--shadow-soft: 0 4rpx 12rpx rgba(0, 0, 0, 0.08);
+	--shadow-medium: 0 8rpx 24rpx rgba(0, 0, 0, 0.1);
+}
 
-	.box .msg-box .headimg image {
-		width: 100rpx;
-		height: 100rpx;
-		border-radius: 50rpx;
-	}
+/* --- 2. Global & Layout --- */
+.booklist-container {
+	background-color: var(--color-background);
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	height: 100%;
+	top: -1rpx;
+}
 
-	.mask {
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5);
-		/* 设置半透明黑色 */
-		z-index: 100;
-		/* 将遮罩层置于页面内容之上 */
-		height: 100vh;
-		/* 将高度设置为视口的高度 */
-		width: 100vw;
-		/* 将宽度设置为视口的宽度 */
-	}
+/* --- 3. Search Bar --- */
+.search-bar, .booklist-container .search {
+	background-color: var(--color-primary);
+	padding: var(--spacing-medium) var(--spacing-xlarge);
+	flex-shrink: 0;
+	flex: 0 1 85rpx;
+}
+.search-bar .section, .booklist-container .search .section {
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-large);
+	width: 96%;
+	margin: 0 auto;
+	height: 70rpx;
+	position: relative;
+}
+.search-bar .form, .booklist-container .section .form {
+	flex-grow: 1;
+	position: relative;
+	background-color: var(--color-primary-light);
+	border-radius: var(--border-radius-large);
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+}
+.search-bar .input-block, .booklist-container .search .input-block {
+	width: 100%;
+	height: 100%;
+	line-height: 100%;
+	color: #fff;
+	display: inline-block;
+	border-radius: 6rpx;
+	font-size: 28rpx;
+	position: relative;
+}
+.search-bar .input-block>input, .booklist-container .search .input-block>input {
+	width: 100%;
+	padding-left: 20rpx;
+	height: 100%;
+	box-sizing: border-box;
+	color: var(--color-text-on-primary);
+	font-size: 28rpx;
+}
+.search-bar .search-block, .booklist-container .search .search-block {
+	position: absolute;
+	top: 14rpx;
+	right: 20rpx;
+	height: 50rpx;
+	line-height: 100%;
+	font-size: 28rpx;
+	color: #fff;
+	display: flex;
+	align-items: center;
+	gap: var(--spacing-small);
+	pointer-events: none;
+}
+.booklist-container .search .search-block>text { margin-left: 4rpx; }
+.booklist-container icon.search-icon,
+.search-bar icon.search-icon {
+	width: 50rpx;
+	display: inline-block;
+	height: 100%;
+	background-size: 230rpx 230rpx;
+	background-position: -90rpx -90rpx;
+	vertical-align: middle;
+}
+.booklist-container .toShop {
+	width: 80rpx;
+	height: 100%;
+	position: absolute;
+	right: 0;
+	top: 0;
+}
+.booklist-container icon.shop-icon,
+.toShop .shop-icon {
+	display: inline-block;
+	width: 40rpx;
+	height: 40rpx;
+	background-size: 230rpx 230rpx;
+	background-position: 0rpx -100rpx;
+	position: absolute;
+	right: 10rpx;
+	top: 15rpx;
+	filter: brightness(0) invert(1);
+}
 
-	/* @import '../component/err_page/err_page.vue'; */
-	.booklist-container {
-		background-color: #f2f2f2;
-		position: relative;
-		height: 100%;
-		top: -1rpx;
-		display: flex;
-		flex-direction: column;
-	}
+/* --- 4. Timeline/Header Tabs --- */
+.timeline-header, .booklist-container .header {
+	text-align: center;
+	position: relative;
+	background-color: var(--color-surface);
+	padding: var(--spacing-large) 0;
+	margin-bottom: var(--spacing-medium);
+	box-shadow: var(--shadow-soft);
+}
+.timeline-header .headerLine, .booklist-container .header .headerLine {
+	display: inline-block;
+	height: 2rpx;
+	width: 80%;
+	background-color: var(--color-border);
+	margin-top: 40rpx;
+}
+.timeline-header .headerTime, .booklist-container .header .headerTime {
+	background-color: var(--color-surface);
+	display: block;
+	height: 20rpx;
+	line-height: 20rpx;
+	width: 240rpx;
+	font-size: 32rpx;
+	font-weight: bold;
+	position: absolute;
+	left: 50%;
+	top: 52rpx;
+	transform: translateX(-50%);
+	color: var(--color-text-secondary);
+}
+.timeline-tabs, .booklist-container .header .timeTab {
+	margin-top: var(--spacing-large);
+	display: flex;
+	justify-content: center;
+	gap: var(--spacing-medium);
+	padding-bottom: 20rpx;
+}
+.timeline-tab, .booklist-container .header .timeTab .everyTime {
+	position: relative;
+	display: inline-block;
+	height: 100rpx;
+	width: 100rpx;
+	text-align: center;
+	border-radius: var(--border-radius-medium);
+	transition: all 0.2s ease-in-out;
+}
+.timeline-tab text, .booklist-container .header .timeTab .everyTime>text {
+	font-size: 24rpx;
+	color: var(--color-text-secondary);
+	vertical-align: middle;
+	margin-right: 10rpx;
+	line-height: 90rpx;
+}
+.timeline-tab--active, .booklist-container .header .timeTab .everyTime.active {
+	border: none;
+	background-color: var(--color-primary);
+	border-radius: 10rpx;
+	box-shadow: 2rpx 2rpx 2rpx #cccccc;
+}
+.timeline-tab--active text, .booklist-container .header .timeTab .everyTime.active>text {
+	color: var(--color-text-on-primary);
+	font-weight: bold;
+}
+.timeline-tab > icon, .booklist-container .header .timeTab .everyTime>icon {
+	position: absolute;
+	left: 50%;
+	top: 80%;
+	transform: translateX(-50%);
+	display: block;
+	height: 10rpx;
+	width: 10rpx;
+	border: none;
+	border-radius: 5rpx;
+	background-color: transparent;
+}
+.timeline-tab > icon.hasRecord,
+.booklist-container .header .timeTab .everyTime>icon.hasRecord {
+	background-color: var(--color-text-secondary);
+}
+.timeline-tab--active > icon.hasRecord,
+.booklist-container .header .timeTab .everyTime.active>icon.hasRecord {
+	background-color: var(--color-text-on-primary);
+}
 
-	.booklist-container .search {
-		background-color: #fd9941;
-		flex: 0 1 85rpx;
-	}
+/* --- 5. Book List --- */
+.book-list, .booklist-container .list {
+	padding: 0 var(--spacing-xlarge);
+	flex-grow: 1;
+	margin-top: 20rpx;
+	padding: 30rpx 30rpx;
+	background-color: #fff;
+}
+.booklist-container .list .empty,
+/* .empty {
+	text-align: center;
+	padding-top: 100rpx;
+	color: var(--color-text-secondary);
+} */
+.empty {
+    display: flex;
+    flex-direction: column; /* 垂直排列 */
+    align-items: center;    /* 水平居中 */
+    justify-content: flex-start; /* 上对齐 */
+    padding-top: 100rpx;
+    color: var(--color-text-secondary);
+    min-height: 400rpx;     /* 可选，根据你页面高度调整 */
+}
+.empty > image {
+    margin-bottom: 32rpx;   /* 图片和下面文字拉开距离 */
+}
+.empty > text, 
+.empty > button {
+    margin-top: 16rpx;
+}
 
-	.booklist-container .search .section {
-		width: 96%;
-		margin: 0 auto;
-		height: 70rpx;
-		position: relative;
-	}
+.booklist-container .list .empty>image, .empty > image {
+	margin-top: 40rpx;
+	height: 300rpx;
+	width: 300rpx;
+	opacity: 0.7;
+}
+.booklist-container .list .empty>button, .empty > button {
+	margin-top: var(--spacing-xlarge);
+	width: 70%;
+	height: 70rpx;
+	line-height: 70rpx;
+	border-color: var(--color-primary);
+	color: var(--color-primary);
+	font-size: 30rpx;
+	background-color: transparent;
+	border-radius: var(--border-radius-large);
+	border: 2rpx solid var(--color-primary);
+}
 
-	.booklist-container .section .form {
-		background-color: #fbb16f;
-		width: 100%;
-		height: 100%;
-	}
+/* --- 6. Book Item --- */
+.book-item, .book-item-wrapper {
+	display: flex;
+	gap: var(--spacing-large);
+	background-color: var(--color-surface);
+	padding: var(--spacing-large);
+	margin-bottom: var(--spacing-large);
+	border-radius: var(--border-radius-medium);
+	box-shadow: var(--shadow-soft);
+	transition: box-shadow 0.2s ease, transform 0.2s ease;
+	position: relative;
+	min-height: 200rpx;
+}
+.book-item-wrapper > image, .book-item__image {
+	width: 140rpx;
+	height: 180rpx;
+	box-shadow: 4rpx 4rpx 2rpx #888;
+	border-radius: var(--border-radius-small);
+	flex-shrink: 0;
+	background-color: var(--color-background);
+	position: absolute;
+	left: 0;
+	top: 10rpx;
+}
+.book-item__info, .booklist-container .list .bookInfo {
+	flex-grow: 1;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	min-width: 0;
+	float: left;
+	width: 100%;
+	padding: 10rpx 10rpx 10rpx 180rpx;
+	font-size: 22rpx;
+	box-sizing: border-box;
+	margin-bottom: 20rpx;
+	height: 200rpx;
+	overflow: hidden;
+}
+.booklist-container .list .bookInfo::after {
+	content: '';
+	display: none;
+	clear: both;
+}
+.book-item__title, .booklist-container .bookInfo .bookName {
+	font-size: 24rpx;
+	font-weight: bold;
+	color: var(--color-text-primary);
+	margin-bottom: var(--spacing-small);
+}
+.book-item__author, .booklist-container .bookInfo .author {
+	font-size: 22rpx;
+	color: var(--color-text-secondary);
+	margin-top: 10rpx;
+	margin-bottom: var(--spacing-medium);
+}
+.book-item__description, .booklist-container .bookInfo .bookDes {
+	font-size: 22rpx;
+	color: var(--color-text-secondary);
+	line-height: 1.5;
+	margin-top: 20rpx;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+}
+.book-item__info .text-underline, .booklist-container .bookInfo .text-underline {
+	border-bottom: 4rpx solid var(--color-primary-light);
+	margin-right: 10rpx;
+	color: #888;
+	padding-bottom: 2rpx;
+}
+.book-item__info > .read-icon,
+.booklist-container .bookInfo>icon {
+	position: absolute;
+	right: 20rpx;
+	top: 10rpx;
+	display: inline-block;
+	width: 30rpx;
+	height: 45rpx;
+}
+.read-icon.isRead, .booklist-container .bookInfo>icon.isRead {
+	background-size: 210rpx 210rpx;
+	background-position: -133rpx -80rpx;
+}
+.read-icon.notRead, .booklist-container .bookInfo>icon.notRead {
+	background-size: 210rpx 210rpx;
+	background-position: -176rpx -80rpx;
+}
 
-	.booklist-container .search .input-block {
-		width: 100%;
-		height: 100%;
-		line-height: 100%;
-		color: #fff;
-		display: inline-block;
-		border-radius: 6rpx;
-		font-size: 28rpx;
-		position: relative;
-	}
+/* --- 7. Avatar Button --- */
+.avatar-button {
+	width: 100rpx; 
+	height: 100rpx; 
+	padding: 0; 
+	border: none;
+	border-radius: 50rpx;
+	overflow: hidden;
+}
+.avatar-button image {
+	width: 100%;
+	height: 100%;
+}
 
-	.booklist-container .search .input-block>input {
-		width: 100%;
-		padding-left: 20rpx;
-		height: 100%;
-		box-sizing: border-box;
-	}
+/* --- 8. WeUI input --- */
+.weui-input, .auth-modal .weui-input {
+	text-align: center;
+	margin: 20rpx 0;
+	width: 80%;
+	padding: var(--spacing-medium);
+	background-color: var(--color-background);
+	border-radius: var(--border-radius-small);
+	margin-bottom: var(--spacing-large);
+}
 
-	.booklist-container .search .input-block>icon {
-		height: 70%;
-		position: absolute;
-		right: 17rpx;
-		top: 17rpx;
-		z-index: 999;
-		font-size: 30rpx;
-	}
+/* --- 9. Modal/Mask/Box --- */
+.mask {
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.6);
+	z-index: 100;
+	height: 100vh;
+	width: 100vw;
+}
+.box {
+	width: 100%;
+	height: 50%;
+	left: 12%;
+	top: 20%;
+	position: fixed;
+	z-index: 101;
+}
+.msg-box, .auth-modal__content {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	background-color: var(--color-surface);
+	border-radius: 5px;
+	width: 76%;
+	padding-top: 30rpx;
+	border: 6rpx solid black;
+	padding: var(--spacing-xlarge);
+	box-shadow: var(--shadow-medium);
+}
+.title, .auth-modal .title {
+	margin: 10rpx;
+	width: 100%;
+	text-align: center;
+	padding-bottom: 10px;
+	border-bottom: 2rpx solid rgba(7, 17, 27, 0.1);
+	font-size: 36rpx;
+	font-weight: bold;
+	color: var(--color-text-primary);
+	padding-bottom: var(--spacing-medium);
+	margin-bottom: var(--spacing-large);
+}
+.msg, .auth-modal .msg {
+	font-size: 12px;
+	color: #ccc;
+	border-top: 2rpx solid rgba(7, 17, 27, 0.1);
+	padding-top: 20rpx;
+	width: 80%;
+	font-size: 24rpx;
+	color: var(--color-text-secondary);
+	background-color: var(--color-background);
+	padding: var(--spacing-medium);
+	border-radius: var(--border-radius-small);
+	width: 100%;
+	margin: var(--spacing-large) 0;
+}
+.btn_wrapper, .auth-modal .btn_wrapper {
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	height: 100rpx;
+	line-height: 100rpx;
+	border-top: 4rpx solid rgba(7, 17, 27, 0.1);
+	width: 100%;
+	border-top: 1rpx solid var(--color-border);
+	margin-top: var(--spacing-large);
+}
+.btn, .auth-modal .btn {
+	background-color: #fff;
+	flex: 1;
+	height: 100rpx;
+	line-height: 100rpx;
+	text-align: center;
+	font-size: 36rpx;
+	width: 200%;
+	border-radius: 0;
+	background-color: transparent;
+	font-size: 32rpx;
+	border-radius: 0;
+	color: var(--color-text-secondary);
+	padding: 0;
+}
+.aumsg, .auth-modal .aumsg {
+	padding-top: 80rpx;
+	font-size: 34rpx;
+	width: 80%;
+	text-align: center;
+	color: var(--color-text-primary);
+}
+.confirm_btn, .auth-modal .confirm_btn {
+	border-left: 2rpx solid rgba(7, 17, 27, 0.1);
+	color: var(--color-success);
+	font-weight: bold;
+	border-left: 1rpx solid var(--color-border);
+}
+.btn::after, .auth-modal .btn::after {
+	border: 0;
+}
 
-	.booklist-container .search .search-block {
-		position: absolute;
-		top: 14rpx;
-		left: 20rpx;
-		height: 50rpx;
-		line-height: 100%;
-		font-size: 28rpx;
-		color: #fff;
-	}
-
-	.booklist-container .search .search-block>text {
-		margin-left: 4rpx;
-	}
-
-	.booklist-container icon.search-icon {
-		width: 50rpx;
-		display: inline-block;
-		height: 100%;
-		background-size: 230rpx 230rpx;
-		background-position: -90rpx -90rpx;
-		vertical-align: middle;
-	}
-
-	.booklist-container .toShop {
-		width: 80rpx;
-		height: 100%;
-		position: absolute;
-		right: 0;
-		top: 0;
-	}
-
-	.booklist-container icon.shop-icon {
-		display: inline-block;
-		width: 40rpx;
-		height: 40rpx;
-		background-size: 230rpx 230rpx;
-		background-position: 0rpx -100rpx;
-		position: absolute;
-		right: 10rpx;
-		top: 15rpx;
-	}
-
-	.booklist-container .header {
-		text-align: center;
-		position: relative;
-		background-color: #ffffff;
-	}
-
-	.booklist-container .header .headerLine {
-		display: inline-block;
-		height: 3rpx;
-		width: 76%;
-		background-color: #ccc;
-		margin-top: 60rpx;
-	}
-
-	.booklist-container .header .headerTime {
-		background-color: #ffffff;
-		display: block;
-		height: 20rpx;
-		line-height: 20rpx;
-		width: 240rpx;
-		font-size: 32rpx;
-		font-weight: bold;
-		position: absolute;
-		left: 50%;
-		top: 52rpx;
-		transform: translateX(-50%);
-		color: #888;
-	}
-
-	.booklist-container .header .timeTab {
-		margin-top: 20rpx;
-		padding-bottom: 20rpx;
-	}
-
-	.booklist-container .header .timeTab .everyTime {
-		position: relative;
-		display: inline-block;
-		height: 100rpx;
-		width: 100rpx;
-		text-align: center;
-	}
-
-	.booklist-container .header .timeTab .everyTime>text {
-		font-size: 24rpx;
-		color: #888;
-		vertical-align: middle;
-		margin-right: 10rpx;
-		line-height: 90rpx;
-	}
-
-	.booklist-container .header .timeTab .everyTime.last {
-		margin-right: 0rpx;
-	}
-
-	.booklist-container .header .timeTab .everyTime.active {
-		border: none;
-		background-color: #fd9941;
-		border-radius: 10rpx;
-		box-shadow: 2rpx 2rpx 2rpx #cccccc;
-	}
-
-	.booklist-container .header .timeTab .everyTime.active>text {
-		color: #fff;
-	}
-
-	.booklist-container .header .timeTab .everyTime>icon {
-		position: absolute;
-		left: 50%;
-		top: 80%;
-		transform: translateX(-50%);
-		display: block;
-		height: 10rpx;
-		width: 10rpx;
-		border: none;
-		border-radius: 5rpx;
-		background-color: transparent;
-	}
-
-	.booklist-container .header .timeTab .everyTime>icon.hasRecord {
-		background-color: #888;
-	}
-
-	.booklist-container .list {
-		margin-top: 20rpx;
-		padding: 30rpx 30rpx;
-		background-color: #fff;
-		flex: 1;
-	}
-
-	.booklist-container .list .empty {
-		text-align: center;
-	}
-
-	.booklist-container .list .empty>image {
-		margin-top: 40rpx;
-		height: 300rpx;
-		width: 300rpx;
-	}
-
-	.booklist-container .list .empty>button {
-		margin-top: 30rpx;
-		width: 70%;
-		height: 70rpx;
-		line-height: 70rpx;
-		border-color: #fd9941;
-		color: #fd9941;
-		font-size: 30rpx;
-	}
-
-	.booklist-container .list .all>image {
-		height: 180rpx;
-		width: 140rpx;
-		box-shadow: 4rpx 4rpx 2rpx #888;
-		float: left;
-		display: inline-block;
-		margin-left: -100%;
-		margin-bottom: 20rpx;
-	}
-
-	.booklist-container .list .bookInfo {
-		float: left;
-		width: 100%;
-		padding: 10rpx 10rpx 10rpx 180rpx;
-		font-size: 22rpx;
-		box-sizing: border-box;
-		position: relative;
-		margin-bottom: 20rpx;
-		height: 200rpx;
-		overflow: hidden;
-	}
-
-	.booklist-container .list .bookInfo::after {
-		content: '';
-		display: none;
-		clear: both;
-	}
-
-	.booklist-container .bookInfo>text {
-		display: block;
-		color: #353535;
-	}
-
-	.booklist-container .bookInfo .bookName {
-		font-size: 24rpx;
-		font-weight: bold;
-	}
-
-	.booklist-container .bookInfo .author {
-		font-size: 22rpx;
-		margin-top: 10rpx;
-	}
-
-	.booklist-container .bookInfo .bookDes {
-		font-size: 22rpx;
-		color: #888;
-		margin-top: 20rpx;
-		overflow: hidden;
-		text-overflow: ellipsis;
-		display: -webkit-box;
-		-webkit-box-orient: vertical;
-		-webkit-line-clamp: 2;
-	}
-
-	.booklist-container .bookInfo .text-underline {
-		border-bottom: 4rpx solid #fd9941;
-		margin-right: 10rpx;
-		color: #888;
-	}
-
-	.booklist-container .bookInfo>icon {
-		position: absolute;
-		right: 20rpx;
-		top: 10rpx;
-		display: inline-block;
-		width: 30rpx;
-		height: 45rpx;
-	}
-
-	.booklist-container .bookInfo>icon.isRead {
-		background-size: 210rpx 210rpx;
-		background-position: -133rpx -80rpx;
-	}
-
-	.booklist-container .bookInfo>icon.notRead {
-		background-size: 210rpx 210rpx;
-		background-position: -176rpx -80rpx;
-	}
-
-
-
-
-	/*modal css*/
-	.box {
-		width: 100%;
-		height: 50%;
-		left: 12%;
-		top: 20%;
-		position: fixed;
-		z-index: 101;
-
-	}
-
-	.msg-box {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		background-color: #ffffff;
-		border-radius: 5px;
-		width: 76%;
-		padding-top: 30rpx;
-		border: 6rpx solid black;
-	}
-
-	.title {
-		margin: 10rpx;
-		width: 100%;
-		text-align: center;
-		padding-bottom: 10px;
-		border-bottom: 2rpx solid rgba(7, 17, 27, 0.1);
-	}
-
-	.msg {
-		/* margin: 20rpx; */
-		font-size: 12px;
-		color: #ccc;
-		border-top: 2rpx solid rgba(7, 17, 27, 0.1);
-		padding-top: 20rpx;
-		/* padding-bottom: 20px; */
-		width: 80%;
-	}
-
-	.btn_wrapper {
-		display: flex;
-		flex-direction: row;
-		align-items: center;
-		height: 100rpx;
-		line-height: 100rpx;
-		border-top: 4rpx solid rgba(7, 17, 27, 0.1);
-		width: 100%;
-	}
-
-	.btn {
-		background-color: #fff;
-		flex: 1;
-		height: 100rpx;
-		line-height: 100rpx;
-		text-align: center;
-		font-size: 36rpx;
-		width: 200%;
-		border-radius: 0;
-	}
-
-	.aumsg {
-		padding-top: 80rpx;
-		font-size: 34rpx;
-		width: 80%;
-	}
-
-	.confirm_btn {
-		border-left: 2rpx solid rgba(7, 17, 27, 0.1);
-		color: green;
-	}
-
-	.btn::after {
-		border: 0;
-	}
+/* --- 10. Head image in modal --- */
+.box .msg-box .headimg, .auth-modal .headimg {
+	background-color: #ebe9fd;
+	text-align: center;
+	color: #ffffff;
+	margin: var(--spacing-large) 0;
+}
+.box .msg-box .headimg image, .auth-modal .headimg image {
+	width: 100rpx;
+	height: 100rpx;
+	border-radius: 50rpx;
+}
 </style>

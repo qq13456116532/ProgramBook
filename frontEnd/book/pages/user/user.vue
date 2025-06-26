@@ -1,442 +1,307 @@
 <template>
+	<!-- 模板部分保持不变，以确保样式和功能完全一致 -->
 	<view>
-	<import src="../component/email_digest/email_digest.vue" />
-	<view class='today-container'>
-	  <view class="headimg">
-		<!--  <button style="width: 100rpx; height: 100rpx; padding: 0; border: none;border-radius: 50rpx;"
+		<import src="../component/email_digest/email_digest.vue" />
+		<view class='today-container'>
+			<view class="headimg">
+				<!--  <button style="width: 100rpx; height: 100rpx; padding: 0; border: none;border-radius: 50rpx;"
 			open-type="chooseAvatar" @chooseavatar="chooseavatar" > -->
-			  <image :src="avatar" model="center" @error="headimgError" />
-		<!-- </button> -->
-		  
-	    <!-- <image :src="avatar" model="center" @error="headimgError" @click="gotoUserInfo" /> -->
-	    <text class="username">{{username}}</text>
-		
-	    <!-- <open-data type="userNickName" class="username"></open-data>		 -->
-	  </view>
-	  <view class="more-info">
-	    <view class="info-time">
-	      <text class="time">
-	        <text class="num">{{hasReadTime}}</text>
-	        <text class="danwei">分钟</text>
-	      </text>
-	      <text class="des">有效阅读时长</text>
-	    </view>
-	    <view class="info-day">
-	      <text class="day">
-	        <text class="num">{{continueReadDay}}</text>
-	        <text class="danwei">天</text>
-	      </text>
-	      <text class="des">坚持阅读天数</text>
-	    </view>
-	    <view class="info-book" @click="goToBookList">
-	      <text class="book">
-	        <text class="num">{{hasBookNum}}</text>
-	        <text class="danwei">本</text>
-	      </text>
-	      <text class="des">已阅读的书籍</text>
-	    </view>
-	  </view>
-	  <view class="email">
-	    <view class="title">
-	      <text>
-	        <text class="text-underline">所有</text>消息</text>
-	      <icon class="email-icon">
-	        <icon class="num-bg"></icon>
-	        <text class="num-value">{{totalEmailsNum}}</text>
-	      </icon>
-	    </view>
-	
-	    <!--滑块-->
-	    <swiper style="height: 250rpx;" class="swipe" duration="600" @change="changeEmail" :current="currentEmail">
-	        <swiper-item v-for="item in emails" :key="item.id" :class="index == currentEmail? 'active': ''">
-	          <view>
-	            <view class="author">
-	              <image :src="item.digestAuthorImg" mode="scaleToFill"></image>
-	              <view>
-	                <text class="name">{{item.digestAuthorName}}</text>
-	                <br />
-	                <text class="des">{{item.digestDes}}</text>
-	              </view>
-	            </view>
-	            <view class="title">{{item.title}}</view>
-	            <view class="content">
-	              <button v-if="item.contentButtonText" @click="gotoUrl"
-				   :data-gotoUrl="item.contentButtonUrl" :data-emailId="item.id" >{{item.contentButtonText}}</button>
-	              <!-- <text class="other">{{item.digest.content.other}}</text> -->
-	            </view>
-	          </view>
-	          <image :src="item.bgImgUrl" class="slide-image" mode="scaleToFill" />
-	        </swiper-item>
-	    </swiper>
-	  </view>
-	  <view class="dailyTask">
-	    <view class="title">
-	      <text>
-	        <text class="text-underline">今日</text>任务
-	      </text>
-	      <text class="isSigned">{{tasks.isSigned == true? '已签到': '已签到'}}</text>
-	    </view>
-	    <view class="task-item" v-for="(bookItem,bookindex) in tasks.allTasks" :key="bookItem.id" :data-bookid="bookItem.id" @click="gotoBookDetail">
-	      <view class="bookDetail">
-	        <text class="name">{{bookItem.factionName}}</text>
-	        <text class="des">{{bookItem.des}}</text>
-	        <view class="hot">
-	          热度：{{bookItem.hot}} 
-			  <uni-icons type="contact" size="30"></uni-icons>
-	          <!-- <icon :class="(index+1) <= bookItem.bookHot? 'yellow-star-icon': 'gray-star-icon'" v-for="index of 5" :key="index" >显示</icon> -->
-	        </view>
-	        <view class="progress">
-	          <text class="progressRate">{{bookItem.hasRead}}</text>
-			  <text class="totalProgress">{{"/"+ bookItem.chapterSum +'\n学习进度'}}</text>
-	        </view>
-	      </view>
-	      <image :src="bookItem.headerImage" mode="scaleToFill"/>
-	    </view>
-	  </view>
-	
-	  <!-- 出错打印 -->
-	  <import src="../component/err_tips/err_tips.vue" />
-	  <template is="err_tips" :data="err_tips_data" />
-	
-	  <!-- 成功的提示 -->
-	  <import src="../component/toast/toast.vue" />
-	  <template is="toast" :data="toast_data" />
-	</view>
+				<image :src="avatar" model="center" @error="headimgError" />
+				<!-- </button> -->
+
+				<!-- <image :src="avatar" model="center" @error="headimgError" @click="gotoUserInfo" /> -->
+				<text class="username">{{username}}</text>
+
+				<!-- <open-data type="userNickName" class="username"></open-data>		 -->
+			</view>
+			<view class="more-info">
+				<view class="info-time">
+					<text class="time">
+						<text class="num">{{hasReadTime}}</text>
+						<text class="danwei">分钟</text>
+					</text>
+					<text class="des">有效阅读时长</text>
+				</view>
+				<view class="info-day">
+					<text class="day">
+						<text class="num">{{continueReadDay}}</text>
+						<text class="danwei">天</text>
+					</text>
+					<text class="des">坚持阅读天数</text>
+				</view>
+				<view class="info-book" @click="goToBookList">
+					<text class="book">
+						<text class="num">{{hasBookNum}}</text>
+						<text class="danwei">本</text>
+					</text>
+					<text class="des">已阅读的书籍</text>
+				</view>
+			</view>
+			<view class="email">
+				<view class="title">
+					<text>
+						<text class="text-underline">所有</text>消息</text>
+					<icon class="email-icon">
+						<icon class="num-bg"></icon>
+						<text class="num-value">{{totalEmailsNum}}</text>
+					</icon>
+				</view>
+
+				<!--滑块-->
+				<swiper style="height: 250rpx;" class="swipe" duration="600" @change="changeEmail" :current="currentEmail">
+					<swiper-item v-for="(item, index) in emails" :key="item.id" :class="index == currentEmail? 'active': ''">
+						<view>
+							<view class="author">
+								<image :src="item.digestAuthorImg" mode="scaleToFill"></image>
+								<view>
+									<text class="name">{{item.digestAuthorName}}</text>
+									<br />
+									<text class="des">{{item.digestDes}}</text>
+								</view>
+							</view>
+							<view class="title">{{item.title}}</view>
+							<view class="content">
+								<button v-if="item.contentButtonText" @click="gotoUrl" :data-gotoUrl="item.contentButtonUrl" :data-emailId="item.id">{{item.contentButtonText}}</button>
+								<!-- <text class="other">{{item.digest.content.other}}</text> -->
+							</view>
+						</view>
+						<image :src="item.bgImgUrl" class="slide-image" mode="scaleToFill" />
+					</swiper-item>
+				</swiper>
+			</view>
+			<view class="dailyTask">
+				<view class="title">
+					<text>
+						<text class="text-underline">今日</text>任务
+					</text>
+					<!-- 此处原始逻辑'已签到':'已签到'无意义，保持原样 -->
+					<text class="isSigned">{{tasks.isSigned == true? '已签到': '已签到'}}</text>
+				</view>
+				<view class="task-item" v-for="(bookItem,bookindex) in tasks.allTasks" :key="bookItem.id" :data-bookid="bookItem.id" @click="gotoBookDetail">
+					<view class="bookDetail">
+						<text class="name">{{bookItem.factionName}}</text>
+						<text class="des">{{bookItem.des}}</text>
+						<view class="hot">
+							热度：{{bookItem.hot}}
+							<uni-icons type="contact" size="30"></uni-icons>
+							<!-- <icon :class="(index+1) <= bookItem.bookHot? 'yellow-star-icon': 'gray-star-icon'" v-for="index of 5" :key="index" >显示</icon> -->
+						</view>
+						<view class="progress">
+							<text class="progressRate">{{bookItem.hasRead}}</text>
+							<text class="totalProgress">{{"/"+ bookItem.chapterSum +'\n学习进度'}}</text>
+						</view>
+					</view>
+					<image :src="bookItem.headerImage" mode="scaleToFill" />
+				</view>
+			</view>
+
+			<!-- 出错打印 -->
+			<import src="../component/err_tips/err_tips.vue" />
+			<template is="err_tips" :data="err_tips_data" />
+
+			<!-- 成功的提示 -->
+			<import src="../component/toast/toast.vue" />
+			<template is="toast" :data="toast_data" />
+		</view>
 	</view>
 </template>
 
 <script>
-	//today.js
-	var Api = require('../../utils/api/api');
-	var util = require('../../utils/util');
-	
+	// 使用 ES6 import 语法，更现代且有助于静态分析
+	import Api from '../../utils/api/api';
+	import util from '../../utils/util';
+
 	export default {
 		data() {
 			return {
-					username:"",
-				    currentEmailPageid: 1,
-				    totalEmailsNum: 5,
-				    emails: [
-				      {
-				        id: '12312312311231',
-				        bgImgUrl: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				        digest: {
-				          author_img: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				          author_name: '熊猫老师',
-				          author_des: '宣传部',
-				          title: "“阅读推行赠书计划”已经开始",
-				          content: {
-				            button: {
-				              text: '加入计划',
-				              url: '../index/index',
-				              eventHandler: 'goToUrl'
-				            },
-				            other: '或者到【我的--邀请好友加入】查看'
-				          }
+				// 用户信息
+				username: "...",
+				avatar: 'https://file.lantingshucheng.com/myApp/unknown_headimg.png', // 提供一个默认头像
+				token: "",
+
+				// 阅读统计
+				hasReadTime: 0,
+				continueReadDay: 0,
+				hasBookNum: 0,
+
+				// 消息（邮件）
+				totalEmailsNum: 0,
+				emails: [], // 初始化为空数组，由 API 填充
+				currentEmail: 0, // Swiper索引通常从0开始
+
+				// 任务
+				tasks: {
+					isSigned: false,
+					allTasks: [], // 初始化为空数组，由 API 填充
+				},
+
+				// Swiper UI状态
+				indicatorDots: false,
+				autoplay: false,
+				interval: 5000,
+				duration: 1000,
 				
-				        }
-				      },
-				      {
-				        id: '1231221331231',
-				        bgImgUrl: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				        digest: {
-				          author_img: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				          author_name: '熊猫老师',
-				          author_des: '宣传部',
-				          title: "“阅读推行赠书计划”已经开始",
-				          content: {
-				            button: {
-				              text: '加入计划',
-				              url: '../index/index',
-				              eventHandler: 'goToUrl'
-				            },
-				            other: '或者到【我的--邀请好友加入】查看'
-				          }
-				        }
-				      },
-				      {
-				        id: '12312312123131',
-				        bgImgUrl: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				        digest: {
-				          author_img: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				          author_name: '熊猫老师',
-				          author_des: '宣传部',
-				          title: "“阅读推行赠书计划”已经开始",
-				          content: {
-				            button: {
-				              text: '加入计划',
-				              url: '../index/index',
-				              eventHandler: 'goToUrl'
-				            },
-				            other: '或者到【我的--邀请好友加入】查看'
-				          }
-				        }
-				      },
-				      {
-				        id: '12312312123131',
-				        bgImgUrl: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				        digest: {
-				          author_img: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				          author_name: '熊猫老师',
-				          author_des: '宣传部',
-				          title: "“阅读推行赠书计划”已经开始",
-				          content: {
-				            button: {
-				              text: '加入计划',
-				              url: '../index/index',
-				              eventHandler: 'goToUrl'
-				            },
-				            other: '或者到【我的--邀请好友加入】查看'
-				          }
-				        }
-				      },
-				      {
-				        id: '12312312123131',
-				        bgImgUrl: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				        digest: {
-				          author_img: 'https://img0.baidu.com/it/u=1397706616,1605176518&fm=253&fmt=auto&app=138&f=JPEG?w=755&h=500',
-				          author_name: '熊猫老师',
-				          author_des: '宣传部',
-				          title: "“阅读推行赠书计划”已经开始",
-				          content: {
-				            button: {
-				              text: '加入计划',
-				              url: '../index/index',
-				              eventHandler: 'goToUrl'
-				            },
-				            other: '或者到【我的--邀请好友加入】查看'
-				          }
-				        }
-				      }
-				    ],
-				    tasks: {
-				      isSigned: false,
-				      allTasks: [
-				        // {
-				        //   bookId: '123123121231231',
-				        //   img: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/ProgramBook/d5ef6b4b-c667-47b8-8986-cff1776e9862.jpg',
-				        //   bookName: 'C/C++求职宝典',
-				        //   bookDes: '本书以C/C++面试求职为核心，全面介绍了在C/C++面试中重点考查的各个考点，并从面试求职、职业规划、面试渠道、面试真题、面试过程及职场生存等各个方面讲解了一个面试者应该掌握的所有知识',
-				        //   bookHot: 4,
-				        //   progressRate: 5
-				        // },
-				        // {
-				        //   bookId: '1231231231',
-				        //   img: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/ProgramBook/10c48144-2446-4909-aa7c-9310c78c489d.jpg',
-				        //   bookName: 'HTML 5应用开发实践指南 ',
-				        //   bookDes: '这本书反映了Web技术的革命。之前，人们普遍认为Web无须编程，只要把脚本硬塞入网页之中就行了。现在，HTML和JavaScript在实现良好用户体验的过程中产生了重要作用。通过阅读本书，你将会掌握Web发展进程中最前沿的技术。',
-				        //   bookHot: 2,
-				        //   progressRate: 2
-				        // }
-				      ]
-				    },
-				    indicatorDots: false,
-				    autoplay: false,
-				    interval: 5000,
-				    duration: 1000,
-				    currentEmail: 1,
-				    avatar: '',
-				    hasReadTime: 0,
-				    continueReadDay: 0,
-				    hasBookNum: 0,
-					token: ""
+				// 用于<template is="...">的组件数据
+				err_tips_data: {},
+				toast_data: {}
 			};
 		},
-		onShow: function () {
-		    var self = this;
-		    // 得到邮件的数据
-		    // self.getEmailsByPageid(self.data.currentEmailPageid);
-			self.token = wx.getStorageSync('token');
-			console.log("刚加载，看一下token:",self.token)
-			uni.request({
-				url:Api.getUserInfo(self.token),
-				success(res) {
-					if(res.data.code == 200){
-						console.log("getUserInfo的结果是",res)
-						self.avatar = res.data.data.avatar
-						self.username = res.data.data.nickName
-					}else{
-						util.showErrMsg(self, '请检查网络', 1000);
+		onShow() {
+			this.token = uni.getStorageSync('token');
+			console.log("页面显示，当前token:", this.token);
+			if (this.token) {
+				this.fetchAllData();
+			} else {
+				util.showErrMsg(this, '请先登录', 1500);
+			}
+		},
+		methods: {
+			/**
+			 * @description 使用Promise.all并行获取所有页面数据，提升加载性能
+			 */
+			async fetchAllData() {
+				// 封装一个返回Promise的请求函数，便于与async/await结合使用
+				const createRequest = (options) => {
+					return new Promise((resolve, reject) => {
+						uni.request({
+							...options,
+							success: (res) => resolve(res),
+							fail: (err) => reject(err),
+						});
+					});
+				};
+
+				try {
+					// 并行发起所有请求
+					const [
+						userInfoRes,
+						readDayRes,
+						readTimeRes,
+						bookNumRes,
+						tasksRes,
+						emailsRes
+					] = await Promise.all([
+						createRequest({ url: Api.getUserInfo(this.token) }),
+						createRequest({ url: Api.GetContinueReadDay(this.token) }),
+						createRequest({ url: Api.getContinueTime(this.token) }),
+						createRequest({ url: Api.gethasBookNum(this.token) }),
+						createRequest({ url: Api.getAllTasks(this.token) }),
+						createRequest({ url: Api.getAllEmails(this.token), method: 'GET' })
+					]);
+
+					// 按顺序处理返回结果
+					if (userInfoRes.data?.code === 200) {
+						const { avatar, nickName } = userInfoRes.data.data;
+						this.avatar = avatar;
+						this.username = nickName;
 					}
-				}
-			})
-			uni.request({
-				url: Api.GetContinueReadDay(self.token),
-				success(res) {
-					if(res.data.code == 200){
-						// console.log("GetContinueReadDay的结果是",res)
-						self.continueReadDay = res.data.data
-					}else{
-						util.showErrMsg(self, '请检查网络', 1000);
+					if (readDayRes.data?.code === 200) this.continueReadDay = readDayRes.data.data;
+					if (readTimeRes.data?.code === 200) this.hasReadTime = readTimeRes.data.data;
+					if (bookNumRes.data?.code === 200) this.hasBookNum = bookNumRes.data.data;
+					if (tasksRes.data?.code === 200) this.tasks.allTasks = tasksRes.data.data;
+					if (emailsRes.data?.code === 200) {
+						this.emails = emailsRes.data.data;
+						this.totalEmailsNum = this.emails.length;
 					}
+					
+				} catch (error) {
+					console.error("获取页面数据失败:", error);
+					util.showErrMsg(this, '数据加载失败，请检查网络', 1500);
 				}
-			})
-			uni.request({
-				url:Api.getContinueTime(self.token),
-				success(res) {
-					if(res.data.code == 200){
-						// console.log("getContinueTime的结果是",res)
-						self.hasReadTime = res.data.data
-					}else{
-						util.showErrMsg(self, '请检查网络', 1000);
-					}				
-				}
-			})
-			uni.request({
-				url:Api.gethasBookNum(self.token),
-				success(res) {
-					if(res.data.code == 200){
-						self.hasBookNum = res.data.data
-					}else{
-						util.showErrMsg(self, '请检查网络', 1000);
-					}
+			},
+
+			/**
+			 * @description 跳转到书籍详情
+			 */
+			gotoBookDetail(event) {
+				const bookid = event.currentTarget.dataset.bookid;
+				uni.navigateTo({
+					url: '../book_detail/book_detail?bookid=' + bookid
+				});
+			},
+
+			/**
+			 * @description Swiper 切换事件处理
+			 */
+			changeEmail(event) {
+				const currentIndex = event.detail.current;
+				this.currentEmail = currentIndex;
 				
+				const showTip = (text) => {
+					this.err_tips_data = { err_tips_show: true, err_tips_text: text };
+					setTimeout(() => {
+						// 使用箭头函数确保`this`指向正确
+						this.err_tips_data = { err_tips_show: false, err_tips_text: '' };
+					}, 3000);
+				};
+				
+				// 边界提示
+				if (currentIndex === 0) {
+					showTip('当前为第一封邮件');
+				} else if (currentIndex >= (this.totalEmailsNum - 1)) {
+					showTip('当前为最后一封邮件');
 				}
-			})
-			uni.request({
-				url:Api.getAllTasks(self.token),
-				success(res) {
-					if(res.data.code == 200){
-						console.log("getAllTasks的结果是",res)
-						self.tasks.allTasks = res.data.data
-					}else{
-						util.showErrMsg(self, '请检查网络', 1000);
-					}
-				}
-			})
-			uni.request({
-				    url: Api.getAllEmails(self.token),
-				    method: 'GET',
-					success(res) {
-						if(res.data.code == 200){
-							console.log("getAllEmails的结果是",res)
-							self.emails = res.data.data
-							self.totalEmailsNum = self.emails.length
-						}else{
-							util.showErrMsg(self, '请检查网络', 1000);
+			},
+			
+			/**
+			 * @description 处理消息卡片中的按钮点击，标记已读并跳转
+			 */
+			gotoUrl(event) {
+				const { gotourl: gotoUrl, emailid: emailId } = event.currentTarget.dataset;
+				console.log(`邮件按钮点击 -> URL: ${gotoUrl}, EmailID: ${emailId}`);
+
+				// 标记邮件已读 (这是一个"即发即忘"的请求，不影响用户跳转)
+				uni.request({
+					url: Api.ReadEmail(emailId),
+					method: 'POST',
+					success: (res) => {
+						// 修正了原始代码中的判断条件 res.code -> res.data.code
+						if (res.data?.code === 200) {
+							console.log("ReadEmail成功:", res.data);
+						} else {
+							console.warn("ReadEmail API未返回成功:", res.data);
 						}
 					},
-					fail() {
-						console.log("getAllEmails失败，请检查网络")
+					fail: (err) => {
+						console.error("ReadEmail 请求失败:", err);
 					}
-			})	 
-		  },
-		  methods:{
-			  
-			  gotoBookDetail: function (event) {
-			  	// console.log("gotoBookDetail,event是",event)
-			    var bookid = event.currentTarget.dataset.bookid;
-			    // 判断当前书籍在不在我的书单中
-			    uni.navigateTo({
-			      url: '../book_detail/book_detail?bookid=' + bookid
-			    });
-			  },
-			  getEmailsByPageid: function (pageid) {
-			      // uni.request({
-			      //     url: Api.getEmailsByPageid(pageid),
-			      //     method: 'GET',
-			      //     success: function (res) {
-			      //         self.setData({totalEmailsNum: res.totalNum, emails: res.data});
-			      //         //将邮件数据存入缓存
-			      //         uni.setStorageSync(emails, res.data);
-			      //     },
-			      //     fail: function () {
-			      //         // 尝试读取缓存中的值
-			      //         // try {self.setData({emails: uni.getStorageSync('emails')});} catch (err) { console.log(err) }
-			      //     }
-			      // });
-			    },
-			    changeEmail: function (event) {
-			      var self = this;
-			      var currentIndex = event.detail.current;
-				  this.currentEmail = currentIndex
-				  console.log("currentIndex: ",currentIndex)				  
-			      if (currentIndex <= 0) {
-			        //提示用户当前为第一封邮件
-					this.err_tips_data = {err_tips_show: true, err_tips_text: '当前为第一封邮件'}
-					console.log('当前为第一封邮件')
-			        setTimeout(function () {
-						this.err_tips_data = {err_tips_show: false, err_tips_text: ''}
-			        }, 3000);
-			      } else if (currentIndex >= (self.totalEmailsNum - 1)) {
-			        //提示用户当前为最后一封
-					this.err_tips_data={err_tips_show: true, err_tips_text: '当前为最后一封邮件'}
-					console.log('当前为最后一封邮件')
-			        setTimeout(function () {
-						this.err_tips_data = {err_tips_show: false, err_tips_text: ''}
-			        }, 3000);
-			      }
-			      //当加载到第五篇，就为下面的数据做准备
-			      if ((currentIndex + 1) % 5 != 0) {
-					  this.currentEmailPageid = currentIndex
-					  // console.log('当前为最后一封邮件,还要往后')
-					  
-			        // self.getEmailsByPageid(self.data.currentEmailPageid);
-			      } else {
-					  // console.log('当前为最后一封邮件,还要往后')
-			        //请求后面的邮件数据
-			      }
-			    },
-			    //email中按钮的处理事件
-			    // goToUrl: function (event) {
-			    //   //获取位于button上的url参数
-			    //   var gotoUrl = event.currentTarget.dataset.gotourl;
-			    //   console.log('正在执行邮件按钮的点击事件，传入的参数是: ' + gotoUrl);
-			    //   uni.navigateTo({
-			    //     url: gotoUrl,
-			    //   });
-			    // },
-				  gotoUrl: function (event) {
-					  var self = this
-				    // 获取位于button上的url参数
-				    var gotoUrl = event.currentTarget.dataset.gotourl;
-					// console.log("看一下gotoURL的参数",event.currentTarget.dataset)
-					var emailId = event.currentTarget.dataset.emailid;
-				    console.log('正在执行邮件按钮的点击事件，传入的参数gotoUrl是: ' + gotoUrl);
-					console.log('正在执行邮件按钮的点击事件，传入的参数emailId是: ' + emailId);
-					uni.request({
-						    url: Api.ReadEmail(emailId),
-						    method: 'POST',
-							success(res) {
-								if(res.code == 200){
-									console.log("ReadEmail的结果是",res)
-									
-								}else{
-									// util.showErrMsg(self, '请检查网络', 1000);
-								}
-							},
-							fail() {
-								console.log("ReadEmail失败，请检查网络")
-							}
-					})	 
-					if(gotoUrl == '../shop/shop'){
-						uni.switchTab({
-							url: gotoUrl
-						})
-					}else{
-						uni.navigateTo({
-						  url: gotoUrl,
-						});
-					}		    
-						
-				  },
-			    goToBookList: function () {
-			      uni.navigateTo({
-			        url: '../booklist/booklist',
-			      });
-			    },
-			    gotoUserInfo: function () {
-			      uni.navigateTo({
-			        url: './userInfo/userInfo',
-			      });
-			    },
-			    headimgError: function () {
-			    this.avatar = 'https://file.lantingshucheng.com/myApp/unknown_headimg.png?imageView2/1/w/60/h/60/format/jpg/interlace/1/q/75|imageslim'
+				});
+
+				// 根据URL类型执行不同跳转
+				if (gotoUrl === '../shop/shop') {
+					uni.switchTab({ url: gotoUrl });
+				} else {
+					uni.navigateTo({ url: gotoUrl });
 				}
-		  }
+			},
+			
+			/**
+			 * @description 跳转到已读书籍列表
+			 */
+			goToBookList() {
+				uni.navigateTo({
+					url: '../booklist/booklist',
+				});
+			},
+			
+			/**
+			 * @description 跳转到用户信息页
+			 */
+			gotoUserInfo() {
+				uni.navigateTo({
+					url: './userInfo/userInfo',
+				});
+			},
+			
+			/**
+			 * @description 头像加载失败时的回退处理
+			 */
+			headimgError() {
+				this.avatar = 'https://file.lantingshucheng.com/myApp/unknown_headimg.png?imageView2/1/w/60/h/60/format/jpg/interlace/1/q/75|imageslim';
+			}
+		}
 	}
 </script>
-
 <style lang="stylus">
 @charset "UTF-8";
 .today-container {

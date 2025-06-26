@@ -1,706 +1,523 @@
 <template>
 	<view class="shop-container">
-  <view class="search">
-    <view class="section">
-      <view class="form">
-        <view>
-			<view class="input-block">
-<!-- <input @focus="setIsSearching" @blur="judgeIsNull" @input="finishedInput" :value="searchValue" placeholder="请输入搜索内容"> -->
-		<input placeholder="请输入搜索内容" @focus="setIsSearching" @blur="judgeIsNull" 
-		@input="finishedInput"
-			v-model="searchValue" />
+		<!-- 搜索区域 -->
+		<view class="search">
+			<view class="section">
+				<view class="form">
+					<view class="input-block">
+						<input 
+							placeholder="请输入搜索内容" 
+							v-model.trim="searchValue"
+							@focus="handleSearchFocus"
+							@blur="handleSearchBlur"
+							@input="handleSearchInput"
+						/>
+					</view>
+					<!-- 使用v-show，当input聚焦时，此占位符隐藏，性能优于v-if -->
+					<view class="search-block" v-show="!isSearching">
+						<icon class="search-icon" color="#fff"></icon>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<!-- 搜索结果页 (使用v-if，不搜索时不渲染DOM) -->
+		<view 
+			class="search-content" 
+			:class="{ 'pt-page-moveToLeft': isSearching }"
+			v-if="isSearching"
+		>
+			<view class="books" v-if="searchData.length > 0">
+				<!-- v-for可以直接放在navigator上，key是必须的 -->
+				<navigator 
+					v-for="item in searchData" 
+					:key="item.id" 
+					:url="`/pages/book_detail/book_detail?bookid=${item.id}&name=${item.factionName}`">
+					<view class="book-item">
+						<image class="book-img fade-in" :src="item.headerImage"></image>
+						<view class="book-info">
+							<text class="book-name">{{item.factionName}}</text>
+							<text class="book-des">简介：{{item.des}}</text>
+							<view class="book-author">作者：{{item.author}}</view>
+						</view>
+					</view>
+				</navigator>
+			</view>
+			<!-- 当进入搜索状态但没有数据时显示提示 -->
+			<view class="no-data" v-else>暂无搜索到相关书籍</view>
 		</view>
 		
-        <view class="search-block" :style="'display:' + (isSearching? 'none': 'inline-block')">
-          <icon class="search-icon" color="#fff"></icon>
-          <!-- <text>请输入搜索内容</text> -->
-        </view>
-      </view>
-    </view>
-  </view>
-  <view :class="'search-content '+ isSearching? 'pt-page-moveToLeft': ''" :style="'display:' + isSearching?'block': 'none'">
-    
-    <view class="books" v-if="searchData.length > 0">
-	<template v-for="item in searchData" >
-		<navigator :key="item.id" :url="'/pages/book_detail/book_detail?bookid='+item.id+'&name='+item.factionName">
-		  <view class="book-item">
-		    <image  class="book-img fade-in" :src="item.headerImage"></image>
-		    <view class="book-info">
-		      <text class="book-name">{{item.factionName}}</text>
-		      <text class="book-des">简介：{{item.des}}</text>
-		      <view class="book-author">作者：{{item.author}}</view>
-		    </view>
-		  </view>
-		</navigator>
-	</template>
-    </view>
-    <view class="no-data" v-else-if="isSearching">暂无搜索到相关书籍</view>
-	
-  </view>
-  <view class="shop-content">
-    <view class="" topic>
-      <view class="header">
-        <text class="text-underline">推荐</text>专题
-      </view>
-      <view class="topic-container">
-        <view class="topic-item" v-for="item in topic" :key="item.id">
-          <image :src="item.headImg" mode="scaleToFill" @click="goRecommendDetail"></image>
-        </view>
-      </view>
-    </view>
-    <view class="sort">
-      <view class="header">
-        <text class="text-underline">分类</text>
-      </view>
-      <view class="sort-container">
-        <navigator url="/pages/classify/classify?index=0" class="sort-item" data-engName="total">
-          <icon class="iconfont  myall-icon"></icon>
-          <view>全部</view>
-        </navigator>
-        <navigator url="/pages/classify/classify?index=1" class="sort-item" data-engName="xuanhuan">
-          <icon class="iconfont  myxuanhuan-icon"></icon>
-          <view>C语言</view>
-        </navigator>
-        <navigator url="/pages/classify/classify?index=2" class="sort-item" data-engName="yanqing">
-          <icon class="iconfont myyanqing-icon"></icon>
-          <view>JAVA</view>
-        </navigator>
-        <navigator url="/pages/classify/classify?index=3" class="sort-item" data-engName="wuxia">
-          <icon class="iconfont mywuxia-icon"></icon>
-          <view>Python</view>
-        </navigator>
-        <navigator url="/pages/classify/classify?index=4" class="sort-item" data-engName="lishi">
-          <icon class="iconfont mylishi-icon"></icon>
-          <view>前端</view>
-        </navigator>
-        <navigator url="/pages/classify/classify?index=5" class="sort-item" data-engName="kehuan">
-          <icon class="iconfont mykehuan-icon"></icon>
-          <view>其他</view>
-        </navigator>
-      </view>
-    </view>
-    <view class="recommend">
-      <view class="header">
-        <text class="text-underline">热门</text>推荐
-        <view class="recommend-container">
-          <view class="recommend-item" v-for="item in recommend"
-		  :key="item.id" :data-bookid="item.id" :style="((item.index+1)%4 == 0)? 'margin-right:0': 'margin-right:12%'" @click="gotoBookDetail">
-            <image :src="item.headerImage" mode="scaleToFill"></image>
-            <view class="bookName">{{item.factionName}}</view>
-            <view class="author">{{item.author}}</view>
-          </view>
-        </view>
-      </view>
-    </view>
-   <!-- <view class="rank">
-      <view class="qdRank" data-rankType="qd" @click="gotoRank">起点小说榜</view>
-      <view class="zhRank" data-rankType="zh" @click="gotoRank">纵横小说榜</view>
-    </view>
-    <view class="new">
-      <view class="header">
-        <text class="text-underline">新书</text>推荐
-      </view>
-      <view class="new-container">
-        <view class="new-item" v-for="item in recommend" :key="item.id" :data-bookid="item.id" :style="((item.index+1)%4 == 0)? 'margin-right:0': 'margin-right:12%'"  @click="gotoBookDetail">
-          <image :src="item.headerImage" mode="scaleToFill"></image>
-          <view class="bookName">{{item.factionName}}</view>
-          <view class="author">{{item.author}}</view>
-        </view>
-      </view> -->
-    </view>
-  </view>
-</view>
-</view>
+		<!-- 主内容区域 (使用v-show，避免搜索时主内容区域销毁和重建) -->
+		<view class="shop-content" v-show="!isSearching">
+			<!-- 推荐专题 -->
+			<view class="topic">
+				<view class="header">
+					<text class="text-underline">推荐</text>专题
+				</view>
+				<view class="topic-container">
+					<view class="topic-item" v-for="item in topic" :key="item.id">
+						<image :src="item.headImg" mode="scaleToFill" @click="goRecommendDetail(item)"></image>
+					</view>
+				</view>
+			</view>
+
+			<!-- 分类导航 (数据驱动) -->
+			<view class="sort">
+				<view class="header">
+					<text class="text-underline">分类</text>
+				</view>
+				<view class="sort-container">
+					<navigator v-for="(item, index) in categories" :key="item.engName" :url="`/pages/classify/classify?index=${index}`" class="sort-item">
+						<icon class="iconfont" :class="item.iconClass"></icon>
+						<view>{{item.name}}</view>
+					</navigator>
+				</view>
+			</view>
+
+			<!-- 热门推荐 -->
+			<view class="recommend">
+				<view class="header">
+					<text class="text-underline">热门</text>推荐
+				</view>
+				<view class="recommend-container">
+					<!-- 移除了内联样式，改用CSS nth-child -->
+					<view 
+						class="recommend-item" 
+						v-for="item in recommend" 
+						:key="item.id" 
+						@click="gotoBookDetail(item.id)">
+						<image :src="item.headerImage" mode="scaleToFill"></image>
+						<view class="bookName">{{item.factionName}}</view>
+						<view class="author">{{item.author}}</view>
+					</view>
+				</view>
+			</view>
+			
+			<!-- 
+				原有的rank和new部分被注释，保持原样。
+				如果需要，可以仿照“热门推荐”的结构进行重构。
+			-->
+			<!-- <view class="rank">...</view> -->
+			<!-- <view class="new">...</view> -->
+		</view>
+	</view>
 </template>
 
 <script>
-	var Api = require('../../utils/api/api');
-	var Util = require('../../utils/util');
-	//获取应用实例
-	var app = getApp();
+	// 使用 import 语法
+	import Api from '../../utils/api/api';
+	// import Util from '../../utils/util'; // 如果 Util 文件未使用，可以移除
+
+	// getApp() 可以在需要时直接调用，无需在顶部定义
+	// const app = getApp();
+
 	export default {
 		data() {
 			return {
-				  topic: [
-				      {
-				        headImg: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/CHATGPT.jpg',
-				        id: '01'
-				      },
-				      {
-				        headImg: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/DEEPLEARNING.jpg',
-				        id: '02'
-				      },
-				      {
-				        headImg: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/VR.jpg',
-				        id: '03'
-				      }
-				    ],
-				    recommend: [],
-				    new: [],
-				    isSearching: false,
-				    searchValue: '',
-				    searchData: [],
-					token: ""
+				topic: [
+					{ id: '01', headImg: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/CHATGPT.jpg' },
+					{ id: '02', headImg: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/DEEPLEARNING.jpg' },
+					{ id: '03', headImg: 'https://wk-gulimall.oss-cn-beijing.aliyuncs.com/VR.jpg' }
+				],
+				// 将分类数据化，便于维护
+				categories: [
+					{ name: '全部', engName: 'total', iconClass: 'myall-icon' },
+					{ name: 'C语言', engName: 'xuanhuan', iconClass: 'myxuanhuan-icon' },
+					{ name: 'JAVA', engName: 'yanqing', iconClass: 'myyanqing-icon' },
+					{ name: 'Python', engName: 'wuxia', iconClass: 'mywuxia-icon' },
+					{ name: '前端', engName: 'lishi', iconClass: 'mylishi-icon' },
+					{ name: '其他', engName: 'kehuan', iconClass: 'mykehuan-icon' },
+				],
+				recommend: [],
+				newBooks: [], // 建议使用更明确的命名，如 newBooks
+				
+				// 搜索相关状态
+				isSearching: false,
+				searchValue: '',
+				searchData: [],
+				
+				// 防抖计时器
+				searchTimer: null,
+				
+				token: ""
 			};
 		},
-		computed: {
-			getIsSearhing(){
-				return "display:" + this.isSearching? 'none': 'inline-block';
-			},
-			//search-content {{isSearching? 'pt-page-moveToLeft': ''}} 16
-			getSearchContent(){
-				return "search-content "+ this.isSearching? 'pt-page-moveToLeft': '';
-			},
-			//display: {{isSearching? 'block': 'none'}} 16
-			getDisplay(){
-				return this.isSearching?'block': 'none';
-			},
-		},
 		created() {
-			this.token = wx.getStorageSync('token');
-			this.getData();
+			this.token = uni.getStorageSync('token');
+			this.fetchInitialData();
 		},
-		onHide(){
-			this.isSearching = false;
-			this.searchValue=""
-			this.searchData=[]
+		// 页面隐藏时重置搜索状态
+		onHide() {
+			this.resetSearchState();
 		},
-		methods:{
-			  finishedInput: function (event) {
-			    var self = this;
-				console.log("完成输入", event.detail.value)
-				
-			    var searchStr = event.detail.value;
-			    if (searchStr) {
-			      uni.request({
-			        url: Api.searchBook(searchStr),
-			        header: { 'content-type': 'application/json' },
-			        success: function (res) {
-			        console.log('Debug: res', res);
-			          const data = res.data.data;
-			          //隐藏加载信息  
-			          setTimeout(function () {
-			            uni.hideToast();
-			          }, 300);
-			          if (data) {
-						self.searchData=data
-			          } else {
-			            uni.showToast({ title: '搜索书籍失败' + res.data.msg ? '，' + res.data.msg : '', icon: 'none' });
-			          }
-			        },
-			        error: function (err) {
-			          setTimeout(function () {
-			            uni.hideToast();
-			            uni.showToast({ title: '搜索书籍失败~', icon: 'none' });
-			          }, 500);
-			        }
-			      });
-			    } else {
-			      console.log("但是输入内容是空的")					
-				  self.isSearching=false;
-				  self.searchData=[]
-			    }
-			  },
-			  judgeIsNull: function (event) {
-			    if (event.detail.value == '') {
-			      this.isSearching=false;
-			    } else {
-			      this.isSearching=true;
-			    }
-			  },
-			setIsSearching: function () {
-			      this.isSearching=true;
+		methods: {
+			// --- 搜索相关方法 ---
+			handleSearchFocus() {
+				this.isSearching = true;
 			},
-			clearSearchContent: function () {
-			    this.searchValue="";
-			  },
-			    // 跳转到详情页
-			    goRecommendDetail: function (event) {},
-			    gotoBookDetail: function (event) {
-					// console.log("gotoBookDetail,event是",event)
-			      var bookid = event.currentTarget.dataset.bookid;
-			      // 判断当前书籍在不在我的书单中
-			      uni.navigateTo({
-			        url: '../book_detail/book_detail?bookid=' + bookid
-			      });
-			    },
-				  gotoRank: function (event) {
-					  console.log("正在执行gotoRank，event是",event)
-				    var rankType = event.currentTarget.dataset.ranktype;
-				    uni.navigateTo({
-				      url: '../rank/rank?rankType=' + rankType
-				    });
-				  },
-				    getData() {
-				      var self = this;
-					  console.log("当前执行getData")
-				      uni.request({
-				        url: Api.getRecommendBooks(),
-				        method: 'GET',
-				        success(res) {
-				          if (!res.data.data || res.data.data.length === 0) {
-				            console.log("getData的结果",res)
-				            // uni.request({
-				            //   url: Api.initDataBase(),
-				            //   method: 'GET',
-				            //   success(res) {
-				            //     console.log(res)
-				            //     self.getData();
-				            //   },
-				            //   fail(e) {
-				            //     uni.showToast({ title: '获取书籍失败', icon: 'none' });
-				            //   }
-				            // });
-				            return;
-				          }
-						  self.recommend=res.data.data
-						  self.new = res.data.data
+			
+			handleSearchBlur() {
+				// 如果输入框为空，则在失焦时退出搜索状态
+				if (!this.searchValue) {
+					this.isSearching = false;
+				}
+			},
+			
+			// 使用防抖处理输入，避免频繁请求
+			handleSearchInput() {
+				// 清除上一个计时器
+				if (this.searchTimer) {
+					clearTimeout(this.searchTimer);
+				}
 				
-				        },
-				        fail(e) {
-				          uni.showToast({ title: '获取书籍失败', icon: 'none' });
-				        }
-				      });
-				    }
+				// 如果输入为空，立即清空结果并返回
+				if (!this.searchValue) {
+					this.searchData = [];
+					return;
+				}
+
+				// 设置一个新的计时器，500ms后执行搜索
+				this.searchTimer = setTimeout(() => {
+					this.executeSearch(this.searchValue);
+				}, 500); // 500ms的延迟
+			},
+
+			executeSearch(keyword) {
+				uni.showLoading({ title: '搜索中...' });
+				uni.request({
+					url: Api.searchBook(keyword),
+					header: { 'content-type': 'application/json' },
+					// 使用箭头函数，this自动指向Vue实例
+					success: (res) => {
+						if (res.data && res.data.code === 200) { // 假设成功的响应有特定标识
+							this.searchData = res.data.data || [];
+						} else {
+							uni.showToast({ title: '搜索失败' + (res.data.msg ? `：${res.data.msg}` : ''), icon: 'none' });
+							this.searchData = [];
+						}
+					},
+					fail: (err) => {
+						uni.showToast({ title: '网络错误，搜索失败', icon: 'none' });
+					},
+					complete: () => {
+						uni.hideLoading();
+					}
+				});
+			},
+
+			resetSearchState() {
+				this.isSearching = false;
+				this.searchValue = "";
+				this.searchData = [];
+				if(this.searchTimer) clearTimeout(this.searchTimer);
+			},
+			
+			// --- 页面导航方法 ---
+			goRecommendDetail(item) {
+				// 可以根据item.id或其他信息进行跳转
+				console.log('跳转到专题详情', item.id);
+				// uni.navigateTo({ url: `/pages/topic_detail/topic_detail?id=${item.id}` });
+			},
+			
+			gotoBookDetail(bookId) {
+				if (!bookId) return;
+				uni.navigateTo({
+					url: `/pages/book_detail/book_detail?bookid=${bookId}`
+				});
+			},
+			
+			gotoRank(rankType) {
+				uni.navigateTo({
+					url: `/pages/rank/rank?rankType=${rankType}`
+				});
+			},
+			
+			// --- 数据获取方法 ---
+			fetchInitialData() {
+				uni.request({
+					url: Api.getRecommendBooks(),
+					method: 'GET',
+					success: (res) => {
+						// 增加对返回数据的健壮性检查
+						if (res.data && res.data.data && res.data.data.length > 0) {
+							this.recommend = res.data.data;
+							this.newBooks = res.data.data; // 如果新书和推荐是相同数据
+						} else {
+							console.warn("获取推荐书籍数据为空或格式不正确", res);
+						}
+					},
+					fail: (e) => {
+						uni.showToast({ title: '获取推荐书籍失败', icon: 'none' });
+					}
+				});
+			}
 		}
 	}
 </script>
 <style lang="stylus">
-@charset "UTF-8";
-.shop-container {
-  display: -webkit-flex;
-  /* Safari */
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  height: 100%;
-  // overflow: hidden;
-}
+// --- 变量定义 ---
+// 颜色变量
+primary-color = #fd9941
+secondary-color = #fbb16f
+white-color = #fff
+dark-text-color = #333
+gray-text-color = #666
+light-gray-text-color = #999
+border-color = #d9d9d9
+placeholder-bg-color = #dddddd
+success-color = #30d590
+danger-color = #fe7156
 
-.shop-container .search {
-  background-color: #fd9941;
-  flex: 0 1 85rpx;
-}
+// 尺寸与间距变量
+base-padding = 15rpx
+base-border-radius = 6rpx
 
-.shop-container .search .section {
-  width: 96%;
-  margin: 0 auto;
-  height: 70rpx;
-  position: relative;
-}
+// --- 基础布局 ---
+.shop-container
+  display: flex
+  flex-direction: column
+  align-items: stretch
+  height: 100%
 
-.shop-container .section .form {
-  background-color: #fbb16f;
-  width: 100%;
-  height: 100%;
-}
+// --- 搜索栏 ---
+.search
+  flex: 0 1 85rpx
+  background-color: primary-color
 
-.shop-container .search .input-block {
-  width: 100%;
-  height: 100%;
-  line-height: 100%;
-  color: #fff;
-  display: inline-block;
-  border-radius: 6rpx;
-  font-size: 28rpx;
-  position: relative;
-}
+  .section
+    position: relative
+    width: 96%
+    height: 70rpx
+    margin: 0 auto
 
-.shop-container .search .input-block > input {
-  width: 100%;
-  padding-left: 20rpx;
-  height: 100%;
-  box-sizing: border-box;
-}
+    .form
+      position: relative
+      width: 100%
+      height: 100%
+      background-color: secondary-color
+      border-radius: base-border-radius
 
-.shop-container .search .input-block > icon {
-  height: 70%;
-  position: absolute;
-  right: 17rpx;
-  top: 17rpx;
-  z-index: 999;
-  font-size: 30rpx;
-}
+      .input-block
+        width: 100%
+        height: 100%
+        
+        input
+          width: 100%
+          height: 100%
+          padding-left: 20rpx
+          box-sizing: border-box
+          font-size: 28rpx
+          color: white-color
+      
+      .search-block
+        position: absolute
+        top: 14rpx
+        left: 20rpx
+        display: flex
+        align-items: center
+        height: 50rpx
+        font-size: 28rpx
+        color: white-color
+        pointer-events: none // 使其不阻挡 input 的 focus 事件
 
-.shop-container .search .search-block {
-  position: absolute;
-  top: 14rpx;
-  left: 20rpx;
-  height: 50rpx;
-  line-height: 100%;
-  font-size: 28rpx;
-  color: #fff;
-}
+        .search-icon
+          width: 50rpx
+          height: 100%
+          background-size: 230rpx 230rpx
+          background-position: -90rpx -90rpx
 
-.shop-container .search .search-block > text {
-  margin-left: 4rpx;
-}
+// --- 搜索结果页 ---
+.search-content
+  position: absolute
+  top: 85rpx // 搜索栏高度
+  left: 0
+  right: 0
+  bottom: 0
+  z-index: 1000
+  background-color: white-color
+  overflow-y: auto
 
-.shop-container icon.search-icon {
-  width: 50rpx;
-  display: inline-block;
-  height: 100%;
-  background-size: 230rpx 230rpx;
-  background-position: -90rpx -90rpx;
-  vertical-align: middle;
-}
+  .books
+    .book-item
+      display: flex
+      padding: 30rpx 32rpx
+      border-bottom: 1px solid border-color
+      &:last-child
+        border-bottom: none
 
-.shop-container .search-content {
-  z-index: 1000;
-  height: 93.3%;//93.3%
-}
+      .book-img
+        width: 180rpx
+        height: 240rpx
+        flex-shrink: 0
+        background-color: placeholder-bg-color
 
-.pt-page-moveToLeft {
-  -webkit-animation: moveToLeft 0.6s ease both;
-  animation: moveToLeft 0.6s ease both;
-}
+      .book-info
+        flex: 1
+        padding-left: 20rpx
+        color: dark-text-color
+        
+        .book-name
+          display: block
+          font-size: 32rpx
+          font-weight: bold
 
-@-webkit-keyframes moveToLeft {
-  from {
-    -webkit-transform: translateX(-100%);
-  }
-  to {
-    -webkit-transform: translateX(0%);
-  }
-}
+        .book-des
+          margin-top: 20rpx
+          font-size: 24rpx
+          color: gray-text-color
+          text-align: justify
+          // 文本超出4行显示省略号
+          display: -webkit-box
+          -webkit-box-orient: vertical
+          -webkit-line-clamp: 4
+          overflow: hidden
 
-@keyframes moveToLeft {
-  form {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0%);
-  }
-}
+        .book-author
+          display: block
+          margin-top: 20rpx
+          font-size: 26rpx
+          color: light-gray-text-color
 
-/*可滑动但是不显示滚动条*/
-::-webkit-scrollbar {
-  width: 0;
-  height: 0;
-  color: transparent;
-}
+  .no-data
+    padding: 60rpx 0
+    text-align: center
+    font-size: 26rpx
+    color: light-gray-text-color
 
-/*书城主体内容*/
-.shop-content {
-  background-color: #fff;
-  flex: 1;
-  overflow: auto;
-  padding: 15rpx 15rpx 0 15rpx;
-}
+// --- 主内容区 ---
+.shop-content
+  flex: 1
+  overflow: auto
+  padding: base-padding
+  background-color: white-color
 
-.shop-content .header {
-  padding: 6rpx 0 15rpx 0;
-  font-size: 30rpx;
-  font-weight: bold;
-}
+  // 各模块通用头部样式
+  .header
+    padding: 6rpx 0 15rpx 0
+    font-size: 30rpx
+    font-weight: bold
 
-.topic-container {
-  overflow-x: auto;
-  white-space: nowrap;
-}
+  // 推荐专题模块
+  .topic
+    .topic-container
+      overflow-x: auto
+      white-space: nowrap
+      &::-webkit-scrollbar
+        display: none
 
-.topic-item {
-  display: inline-block;
-  width: 48.6%;
-  text-align: center;
-  margin-right: 20rpx;
-}
+      .topic-item
+        display: inline-block
+        width: 48.6%
+        margin-right: 20rpx
+        &:last-child
+          margin-right: 0
 
-.topic-item:last-child {
-  margin-right: 0;
-}
+        image
+          width: 100%
+          height: 192rpx
+          border-radius: base-border-radius
 
-.topic-item image {
-  border-radius: 6rpx;
-  width: 100%;
-  height: 192rpx;
-}
+  // 分类导航模块
+  .sort
+    .sort-container
+      display: flex
+      justify-content: space-between
+      padding: 20rpx 40rpx 30rpx
+      text-align: center
+      font-size: 24rpx
 
-.rank {
-  padding: 20rpx 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-align: center;
-  color: #fff;
-  font-size: 32rpx;
-}
+      .sort-item
+        width: 80rpx
+        
+        .iconfont
+          display: block
+          font-size: 60rpx
+          line-height: 1.2
+          &.myall-icon::before
+            content: '\e635'
+          &.myxuanhuan-icon::before
+            content: '\e61a'
+          &.myyanqing-icon::before
+            content: '\e639'
+          &.mywuxia-icon::before
+            content: '\e664'
+          &.mylishi-icon::before
+            content: '\e69a'
+          &.mykehuan-icon::before
+            content: '\e618'
 
-.rank .qdRank {
-  display: inline-block;
-  width: 30%;
-  height: 90rpx;
-  margin-right: 40rpx;
-  border-radius: 6rpx;
-  background-color: #fe7156;
-  line-height: 90rpx;
-}
+  // 热门推荐模块
+  .recommend
+    .recommend-container
+      display: flex
+      flex-flow: row wrap
+      margin-left: 11% // 遵循原布局的左边距
+      margin-top: 12rpx
 
-.rank .zhRank {
-  display: inline-block;
-  width: 30%;
-  height: 90rpx;
-  background-color: #30d590;
-  border-radius: 6rpx;
-  line-height: 90rpx;
-}
+      .recommend-item
+        flex: 0 0 21%
+        max-width: 21%
+        height: 200rpx
+        margin-right: 12%
+        margin-bottom: 100rpx // 为下方文字留出空间
+        
+        // 每行第三个清除右边距
+        &:nth-child(3n)
+          margin-right: 0
 
-/*热门推荐*/
-.recommend-container {
-	  margin-left: 11%; /* 设置左侧外边距为10像素 */
+        image
+          width: 100%
+          height: 100%
 
-  margin-top: 12rpx;
-  display: flex;
-  display: -webkit-flex;
-  flex-flow: row wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  align-content: flex-start;
-}
+        .bookName, .author
+          white-space: nowrap
+          overflow: hidden
+          text-overflow: ellipsis
 
-.recommend-container .recommend-item {
-  flex: 0 0 21%;
-  max-width: 21%;
-  height: 200rpx;
-  margin-right: 5.3%;
-  margin-bottom: 100rpx;
-}
+        .bookName
+          font-size: 24rpx
+          color: dark-text-color
+          font-weight: bold
 
-.recommend-container .recommend-item image {
-  width: 100%;
-  height: 100%;
-}
+        .author
+          font-size: 20rpx
+          color: gray-text-color
 
-.recommend-container .recommend-item .bookName {
-  font-size: 24rpx;
-  color: #000;
-  font-weight: bold;
-}
+  // 排行榜模块 (样式保留)
+  .rank
+    padding: 20rpx 0
+    color: white-color
+    font-size: 32rpx
+    text-align: center
 
-.recommend-container .recommend-item .author {
-  font-size: 20rpx;
-  color: #666;
-}
+    .qdRank, .zhRank
+      display: inline-block
+      width: 30%
+      height: 90rpx
+      line-height: 90rpx
+      border-radius: base-border-radius
 
-/*分类*/
-.sort-container {
-  display: flex;
-  display: -webkit-flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  font-size: 24rpx;
-  padding: 20rpx 40rpx 30rpx 40rpx;
-  text-align: center;
-}
+    .qdRank
+      margin-right: 40rpx
+      background-color: danger-color
 
-.sort-item {
-  width: 80rpx;
-}
+    .zhRank
+      background-color: success-color
 
-.sort-item > icon {
-  display: inline-block;
-  width: 60rpx;
-  height: 60rpx;
-  background-size: 300rpx 300rpx;
-}
-.myall-icon {
-  // background-position: -58rpx -120rpx;
-}
-.myall-icon::before{
-	content: '\e635';
-}
-.all-icon {
-  background-position: -58rpx -120rpx;
-}
-.myxuanhuan-icon::before{
-	content: '\e61a';
-	// background-position: -119rpx -120rpx;
-	
-}
-.xuanhuan-icon {
-  background-position: -119rpx -120rpx;
-}
-.myyanqing-icon::before{
-	content: '\e639';
-}
-.yanqing-icon {
-  background-position: -182rpx -120rpx;
-}
-.mywuxia-icon::before{
-	content: '\e664';
-}
-.wuxia-icon {
-  background-position: -244rpx -120rpx;
-}
-.mylishi-icon::before{
-	content: '\e69a';
-}
-.lishi-icon {
-  background-position: 5rpx -182rpx;
-}
-.mykehuan-icon::before{
-	content: '\e618';
-	
-}
-.kehuan-icon {
-  background-position: -57rpx -182rpx;
-}
+// --- 动画与全局辅助 ---
+// 页面滑入动画
+.pt-page-moveToLeft
+  animation: moveToLeft 0.6s ease both
 
-/*新书*/
-.new-container {
-  display: flex;
-  display: -webkit-flex;
-  flex-flow: row wrap;
-  justify-content: flex-start;
-  align-items: flex-start;
-  align-content: flex-start;
-}
+@keyframes moveToLeft
+  from
+    transform: translateX(100%)
+  to
+    transform: translateX(0%)
 
-.new-container .new-item {
-  flex: 0 0 21%;
-  max-width: 21%;
-  height: 200rpx;
-  margin-right: 5.3%;
-  margin-bottom: 100rpx;
-}
-
-.new-container .new-item image {
-  width: 100%;
-  height: 100%;
-}
-
-.new-container .new-item .bookName {
-  font-size: 24rpx;
-  color: #000;
-  font-weight: bold;
-}
-
-.new-container .new-item .author {
-  font-size: 20rpx;
-  color: #666;
-}
-
-/*搜索*/
-.search-tips {
-  padding: 20rpx;
-}
-
-.search-tips .tips-item {
-  display: inline-block;
-  padding: 4rpx 24rpx;
-  height: 40rpx;
-  border-radius: 20rpx;
-  border: 3rpx #d4d6d8 solid;
-  color: #49505a;
-  font-size: 24rpx;
-  line-height: 40rpx;
-}
-
-.history {
-  border-bottom: 1px solid #d7d8da;
-}
-
-.history-item {
-  padding: 0 20rpx;
-  font-size: 30rpx;
-  font-weight: bold;
-  line-height: 100%;
-  position: relative;
-}
-
-.history-item > icon {
-  vertical-align: middle;
-  top: 23rpx;
-  position: absolute;
-}
-
-.history-item view {
-  padding: 20rpx 0;
-  margin-left: 43rpx;
-  border-bottom: 1px solid #d7d8da;
-}
-
-.history-item:last-child view {
-  border-bottom: none;
-}
-
-.clearBtn {
-  height: 40rpx;
-  text-align: center;
-  margin-top: 40rpx;
-}
-
-.clearBtn > text {
-  background: transparent;
-  font-size: 24rpx;
-  line-height: 40rpx;
-  color: #1b88ee;
-  border: none;
-  width: 100%;
-}
-
-.book-item {
-  display: -webkit-flex;
-  display: flex;
-  flex-flow: row nowrap;
-  justify-content: space-between;
-  align-items: stretch;
-  padding: 0 32rpx 30rpx 32rpx;
-  box-sizing: border-box;
-  border-bottom: 1px solid #d9d9d9;
-}
-
-.book-item:last-child {
-  border-bottom: none;
-}
-
-.book-item .book-img {
-  width: 180rpx;//180rpx
-  height: 240rpx;
-  background-color: #dddddd;
-}
-
-.book-item .book-info {
-  flex: 1;
-  padding-left: 20rpx;
-  color: #333;
-}
-
-.book-item .book-name {
-  display: block;
-  font-size: 32rpx;
-}
-
-.book-item .book-des {
-  font-size: 24rpx;
-  margin-top: 20rpx;
-  text-align: justify;
-  display: -webkit-box;
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: 4;
-  overflow: hidden;
-}
-
-.book-item .book-author {
-  display: block;
-  font-size: 26rpx;
-  color: #999;
-  margin-top: -4rpx;
-}
-
-.book-item .book-author icon {
-  font-size: 26rpx;
-  margin-right: 20rpx;
-}
-
-.books {
-  padding-top: 20rpx;
-}
-
-.no-data {
-  text-align: center;
-  font-size: 26rpx;
-  color: #ddd;
-  padding: 60rpx 0;
-}
-
+// 全局隐藏滚动条
+::-webkit-scrollbar
+  width: 0
+  height: 0
+  color: transparent
 </style>
