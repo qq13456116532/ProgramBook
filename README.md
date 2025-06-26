@@ -14,7 +14,7 @@
 
 |                         书籍详情 & 阅读器                          |                               搜索 & 用户                               |
 | :----------------------------------------------------------: | :----------------------------------------------------------: |
-| ![详情](https://raw.githubusercontent.com/qq13456116532/ProgramBook/main/images/image-20230404182610721.png) | ![搜索](https://raw.githubusercontent.com/qq13456116532/ProgramBook/main/images/image-20230404182651488.png) |
+| ![书籍详情](./images/Snipaste_2025-06-26_17-18-44.png)| ![详情](https://raw.githubusercontent.com/qq13456116532/ProgramBook/main/images/image-20230404182610721.png) | ![搜索](https://raw.githubusercontent.com/qq13456116532/ProgramBook/main/images/image-20230404182651488.png) |
 
 ## 技术栈
 

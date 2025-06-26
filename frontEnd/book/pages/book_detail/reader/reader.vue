@@ -13,29 +13,33 @@
 			<view class="cover" :style="coverStyle"></view>
 
 			<!-- Bottom Control Bar -->
-			<view v-show="control.all && control.control_tab" class="control" :style="controlPanelStyle">
+				<!-- 添加 @touchend.stop 来阻止事件穿透 -->
+			<view v-show="control_all && control_tab" class="control" :style="controlPanelStyle">
 				<view class="control-item" @tap="openMulu">
 					<icon :class="muluIconClass" />
 				</view>
+				<!-- 注意 @tap 后面增加了 .stop -->
+				
 				<view class="control-item" @tap="showControlDetail('jingdu')">
-					<icon :class="jingduIconClass" />
+				    <icon :class="jingduIconClass" />
 				</view>
 				<view class="control-item" @tap="showControlDetail('color')">
-					<icon :class="dayIconClass" />
+				    <icon :class="dayIconClass" />
 				</view>
 				<view class="control-item" @tap="showControlDetail('font')">
-					<icon :class="fontIconClass" />
+				    <icon :class="fontIconClass" />
 				</view>
 			</view>
 
 			<!-- Detailed Control Panels -->
-			<view v-show="control.all && control.control_detail" class="control-detail" :style="controlPanelStyle">
+			<!-- 同样添加 @touchend.stop -->
+			<view v-show="control_all && control_detail" class="control-detail" :style="controlPanelStyle">
 				<!-- Progress Detail -->
-				<view v-show="control.target === 'jingdu'" class="jingdu-detail">
+				<view v-show="control_target === 'jingdu'" class="jingdu-detail">
 					<view class="jingdu">
 						<icon :class="rLeftIconClass" @tap="prevChapter"></icon>
 						<view class="nameAndNum">
-							<text class="faction" :style="secondaryTextStyle">{{ book.factionName }}</text>
+							<text class="faction" :style="secondaryTextStyle">{{ book.factionName }}</text><br/>
 							<text class="jingdu-num">第{{ sliderValues.section }}章 / 共{{ maxChapterNum }}章</text>
 						</view>
 						<icon :class="rRightIconClass" @tap="nextChapter"></icon>
@@ -45,7 +49,7 @@
 				</view>
 
 				<!-- Color & Brightness Detail -->
-				<view v-show="control.target === 'color'" class="color-detail">
+				<view v-show="control_target === 'color'" class="color-detail">
 					<view class="brightness">
 						<icon :class="dayIconClass" />
 						<slider class="bright-slider" :value="sliderValues.bright" min="0" max="100"
@@ -63,7 +67,7 @@
 				</view>
 
 				<!-- Font Detail -->
-				<view v-show="control.target === 'font'" class="font-detail">
+				<view v-if="control_target === 'font'"  class="font-detail">
 					<view class="fontSize">
 						<icon :class="[fontIconClass, 'small']"></icon>
 						<slider class="font-slider" :value="sliderValues.font" min="24" max="40" step="2"
@@ -86,16 +90,64 @@
 									{{ font }}
 								</text>
 								<icon v-if="currentFontFamily === font" type="success_no_circle" size="12"/>
+							</view>
+						</view>
+					</view>
+				</view>
+
+				<!-- 
+				  !!! ATTENTION !!!
+				  The Table of Contents Panel has been MOVED from here...
+				-->
+			</view>
+			
+			<!-- 
+			  !!! ATTENTION !!!
+			  ... to here. It is now a top-level element inside .reader-container,
+			  so its visibility is independent of the other control panels.
+			-->
+			<view :class="['mulu-detail', { active: isShowMulu }]" @tap.self="closeMulu">
+				<view class="muluPanel" :style="{ backgroundColor: colorStyle.content_bg }">
+					<swiper class="mulu-swipers" :current="muluSwiperNum" @change="muluSwiperChange">
+						<swiper-item class="mulu-swiper">
+							<view class="search">
+								<icon type="search" size="15" color="#ccc" />
+								<input type="text" placeholder="搜索全书内容" placeholder-class="muluPl" @confirm="doContentSearch" />
+							</view>
+							<view class="bookInfo" :style="{ color: secondaryTextStyle.color }">
+								<image :src="headImg" mode="scaleToFill"></image>
+								<view class="book">
+									<text class="factionName">{{ factionName }}</text>
+									<text class="author">{{ book.author }}</text>
 								</view>
+								<view class="readerTime">
+									<text><text class="num">{{ hours }}</text>时<text class="num">{{ minutes }}</text>分</text>
+									<text class="timeDes">读书时长</text>
 								</view>
-								
+							</view>
+							<scroll-view class="sections" scroll-y="true">
+								<view v-for="item in allSectionData" :key="item.sectionId" class="section"
+									:style="{ color: item.sectionNum === sliderValues.section ? colorStyle.control_fontColor : secondaryTextStyle.color }"
+									@tap="loadChapterBySelection(item)">
+									<text class="factionNum">第{{ item.sectionNum }}章</text>
+									<text class="factionName">{{ item.sectionTitle }}</text>
+								</view>
+							</scroll-view>
+						</swiper-item>
+						<swiper-item class="shuqian-swiper">书签</swiper-item>
+						<swiper-item class="huaxian-swiper">划线</swiper-item>
+					</swiper>
+					<view class="bottomCtr">
+						<text :style="{ color: getMuluTabStyle(0) }">目录</text>
+						<text :style="{ color: getMuluTabStyle(1) }">书签</text>
+						<text :style="{ color: getMuluTabStyle(2) }">划线</text>
 					</view>
 				</view>
 			</view>
+
 		</view>
 	</view>
 </template>
-
 <script>
 	import {
 		GetendReading,
@@ -113,6 +165,10 @@
 	export default {
 		data() {
 			return {
+				control_all:        false,
+				control_tab:        false,
+				control_detail:     false,
+				control_target:     '',      
 				// Book and Content State
 				book: {},
 				bookid: '',
@@ -148,12 +204,6 @@
 					lastY: 0,
 					hasMoved: false,
 					direction: 0, // 0 for left, 1 for right
-				},
-				control: {
-					all: false,
-					control_tab: false,
-					control_detail: false,
-					target: '' // 'jingdu', 'color', 'font'
 				},
 				isShowMulu: false,
 				muluSwiperNum: 0,
@@ -224,12 +274,12 @@
 				return `iconfont mymulu${this.colorStyle.styleNum}-icon`;
 			},
 			jingduIconClass() {
-				const isSelected = this.control.target === 'jingdu';
+				const isSelected = this.control_target === 'jingdu';
 				const selectSuffix = isSelected ? '-select' : '';
 				return `iconfont myjingdu${this.colorStyle.styleNum}${selectSuffix}-icon`;
 			},
 			dayIconClass() {
-				const isSelected = this.control.target === 'color';
+				const isSelected = this.control_target === 'color';
 				const selectSuffix = isSelected ? '-select' : '';
 				return `iconfont myday${this.colorStyle.styleNum}${selectSuffix}-icon`;
 			},
@@ -455,22 +505,34 @@
 				const { pxWidth, pxHeight } = this.windows;
 				
 				if (lastX > pxWidth * 0.25 && lastX < pxWidth * 0.75 && lastY > pxHeight * 0.25 && lastY < pxHeight * 0.75) {
-					if (!this.control.all) {
+					if (!this.control_all) {
 						this.control = { all: true, control_tab: true, control_detail: false, target: '' };
 					} else {
-						this.control.all = false;
+						this.control_all = false;
 						this.isShowFontSelector = false;
 					}
 				}
 			},
-			showControlDetail(target) {
-				if (this.control.target === target && this.control.control_detail) {
-					this.control.control_detail = false;
-				} else {
-					this.control.target = target;
-					this.control.control_detail = true;
-				}
+			// 精简后的 showControlDetail
+			showControlDetail (target){
+				console.log("showControlDetail invoked")
+				console.log("control_target is ",this.control_target)
+				console.log("control_detail is ",this.control_detail)
+				this.control_all = true
+			  // 已经是当前面板 → 关闭
+			  if (this.control_target === target && this.control_detail){
+			    this.control_detail = false
+			    this.control_tab    = true
+			    this.control_target = ''
+			    return
+			  }
+			  // 打开对应面板
+			  this.control_detail = true
+			  this.control_tab    = false
+			  this.control_target = target
 			},
+
+
 			
 			// --- Settings Handlers ---
 			sectionSliderChange(e) {
@@ -514,10 +576,13 @@
 
 			// --- Mulu (Table of Contents) Logic ---
 			async openMulu() {
-				this.control.all = false;
+				console.log('[openMulu] tapped');
+
+				this.control_all = false;
 				try {
 					const res = await uni.request({ url: getMulu(this.bookid, this.sectionNum) });
 					if (res[1].data.code === 200) {
+						console.log('[openMulu] res[1].data:', res[1].data);
 						this.allSectionData = res[1].data.data.sectionArray;
 						this.headImg = res[1].data.data.headImg;
 						this.isShowMulu = true;
@@ -675,12 +740,15 @@
 		bottom: 110rpx;
 		left: 0;
 		border-bottom: 1px solid #d7d7d7;
+		z-index:15;            
 	}
+
+
+
 
 	.reader-container .control-detail>view {
 		width: 100%;
 		position: absolute;
-		display: none;
 	}
 
 	.reader-container .control-detail .jingdu {
@@ -690,6 +758,7 @@
 		color: #999;
 		height: 110rpx;
 	}
+
 
 	.reader-container .faction {
 		color: #333;
@@ -898,7 +967,7 @@
 		position: absolute;
 		height: 100%;
 		width: 100%;
-		z-index: -1;
+		z-index: 5;
 		top: 0;
 		left: 0;
 		
@@ -1139,7 +1208,8 @@
 		top: 0;
 		left: 0;
 		display: none;
-		
+		z-index: 20; /* <-- 添加这一行，确保它在最上层 */
+
 	}
 
 	.mulu-detail.active {
@@ -1287,7 +1357,7 @@
 	}
 
 	@keyframes slideShow {
-		form {
+		from {
 			width: 0;
 		}
 
@@ -1359,7 +1429,7 @@
 		bottom: 110rpx;
 		left: 0;
 		border-bottom: 1px solid #d7d7d7;
-		z-index: 10;
+		z-index: 30;
 	}
 	
 	.reader-container .cover {
@@ -1436,5 +1506,11 @@
 
 	/* ... icon content definitions e.g., .mymulu1-icon::before { content: '\e60b;'; } ... */
 
+
+.reader-container .control,
+.reader-container .control-detail {
+  background-color: #ffffff; /* 兜底，夜间模式会被 inline 样式覆盖 */
+  z-index: 30;               /* 适当抬高，确保压住正文 */
+}
 </style>
 
